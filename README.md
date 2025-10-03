@@ -23,7 +23,7 @@ MyEpiBooking/
     └── tsconfig/     # Configurations TypeScript
 ```
 
-## 🛠️ Stack Technique
+## Stack Technique
 
 ### Frontend Web
 - **Framework**: Next.js 14/15 (App Router)
