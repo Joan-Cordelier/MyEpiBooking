@@ -1,0 +1,78 @@
+/* React Big Calendar visual tweaks for better contrast and clarity */
+/* Scope overrides under .rbc-epi root to avoid leaking elsewhere */
+.rbc-epi .rbc-toolbar {
+  color: #111827; /* neutral-900 */
+}
+
+.rbc-epi .rbc-time-content,
+.rbc-epi .rbc-time-header,
+.rbc-epi .rbc-time-view,
+.rbc-epi .rbc-agenda-view {
+  color: #111827; /* darker text */
+  font-size: 0.95rem;
+}
+
+/* Darken time gutter labels */
+.rbc-epi .rbc-time-gutter .rbc-timeslot-group,
+.rbc-epi .rbc-time-gutter .rbc-time-column .rbc-time-slot,
+.rbc-epi .rbc-time-gutter .rbc-time-header-gutter {
+  color: #111827;
+}
+
+.rbc-epi .rbc-time-gutter .rbc-time-slot,
+.rbc-epi .rbc-time-slot {
+  border-top-color: rgba(0,0,0,0.25); /* stronger grid line */
+}
+
+/* Darken major grid borders */
+.rbc-epi .rbc-time-header,
+.rbc-epi .rbc-time-content,
+.rbc-epi .rbc-time-column,
+.rbc-epi .rbc-day-slot .rbc-time-slot {
+  border-color: rgba(0,0,0,0.3);
+}
+
+/* Day headers text darker */
+.rbc-epi .rbc-header {
+  color: #111827;
+  border-color: rgba(0,0,0,0.3);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* Current time indicator more visible */
+.rbc-epi .rbc-current-time-indicator {
+  background-color: #ef4444; /* red-500 */
+}
+
+/* Event text color, keep readable */
+.rbc-epi .rbc-event,
+.rbc-epi .rbc-event-label,
+.rbc-epi .rbc-event-content {
+  color: #111827;
+}
+
+/* Make each timeslot a little taller for readability */
+.rbc-epi .rbc-time-slot {
+  height: 24px; /* default ~20px, this makes 30min slot taller */
+}
+
+/* Gutter time labels a bit larger and bolder */
+.rbc-epi .rbc-time-gutter .rbc-time-slot,
+.rbc-epi .rbc-time-gutter .rbc-timeslot-group {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+/* Ensure header and body columns align by preventing subpixel issues */
+.rbc-epi .rbc-time-header-content,
+.rbc-epi .rbc-time-content > * + * {
+  /* Use integer pixel borders to avoid rounding mismatches */
+  border-left-width: 1px;
+}
+
+/* Avoid font scaling inconsistencies that can cause header/body width drift */
+.rbc-epi {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
