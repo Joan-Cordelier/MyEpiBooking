@@ -5,7 +5,9 @@
 ** Calendar system
 */
 
+"use client";
 import { addWeeks, startOfWeek, format, addDays } from "date-fns";
+import { formatDuration } from "@/lib/formatDuration";
 import { fr } from "date-fns/locale";
 import { Calendar, dateFnsLocalizer, Views, SlotInfo } from "react-big-calendar";
 import { useMemo, useState, useCallback } from "react";
@@ -23,32 +25,106 @@ const localizer = dateFnsLocalizer({
 export type Room = string;
 export type CalendarEvent = {
     title: string;
+    type: string;
+    author: string;
     start: Date;
     end: Date;
     room?: Room;
     allDay?: boolean;
 };
 
+const TYPE_COLORS: Record<string, { bg: string; border: string }> = {
+    "Kick-off": { bg: "#DBEAFE", border: "#93C5FD" }, // blue-100 / blue-300
+    "Bootstrap": { bg: "#FEF3C7", border: "#FCD34D" }, // amber-100 / amber-300
+    "Workshop": { bg: "#DCFCE7", border: "#86EFAC" }, // green-100 / green-300
+    "Meeting": { bg: "#EDE9FE", border: "#C4B5FD" }, // violet-100 / violet-300
+    "Exam": { bg: "#FEE2E2", border: "#FCA5A5" },
+};
+
+function eventStyleGetter(event: CalendarEvent) {
+    const colors = TYPE_COLORS[event.type] ?? { bg: "#E5E7EB", border: "#D1D5DB" };
+    return {
+        style: {
+            backgroundColor: colors.bg,
+            borderColor: colors.border,
+            color: "#111827",
+            borderWidth: 1,
+            borderStyle: "solid",
+        },
+    };
+}
+
+function EventRenderer({ event }: { event: CalendarEvent }) {
+    return (
+        <div className="flex h-full flex-col leading-tight">
+            <div className="font-semibold truncate">{event.title}</div>
+            <div className="mt-auto flex w-full items-end justify-between text-[11px]">
+                <div className="truncate">{formatDuration(event.start, event.end)}</div>
+                <div className="flex min-w-0 flex-col items-end text-right">
+                    <div className="truncate opacity-80">{event.type}</div>
+                    <div className="truncate opacity-80">{event.author}</div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export default function BookingCalendarSection() {
     const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
     const [view, setView] = useState<typeof Views[keyof typeof Views]>(Views.WEEK);
-    const [room, setRoom] = useState<Room>("Salle 601");
-    const rooms: Room[] = ["Salle 601", "Salle 602", "Salle 603"];
+    const [room, setRoom] = useState<Room>("601");
+    const rooms: Room[] = ["601", "602", "801"];
 
         const allEvents = useMemo<CalendarEvent[]>(() => {
             return [
                 {
-                    title: "Kick-off mini_printf", // Mercredi 22/10/2025 09:00–10:00 [601]
+                    title: "Kick-off my_printf", // Mercredi 22/10/2025 09:00–10:00 [601]
+                    type: 'Kick-off',
+                    author: 'Sebastien Goby',
                     start: new Date(2025, 9, 22, 9, 0),
                     end: new Date(2025, 9, 22, 10, 0),
-                    room: "Salle 601",
+                    room: "601",
                 },
                 {
-                    title: "Bootstrap mini_printf",
+                    title: "Bootstrap my_printf",
+                    type: 'Bootstrap',
+                    author: 'Sebastien Goby',
                     start: new Date(2025, 9, 22, 10, 0), // Mercredi 22/10/2025 10:00–12:00 [601]
                     end: new Date(2025, 9, 22, 12, 0),
-                    room: "Salle 601",
+                    room: '601',
                 },
+                {
+                    title: "Kick-off Final Stumper",
+                    type: 'Kick-off',
+                    author: 'Sebastien Goby',
+                    start: new Date(2025, 9, 25, 9, 0),
+                    end: new Date(2025, 9, 25, 10, 0),
+                    room: '601'
+                },
+                {
+                    title: "Final Stumper",
+                    type: 'Exam',
+                    author: 'Sebastien Goby',
+                    start: new Date(2025, 9, 25, 10, 0),
+                    end: new Date(2025, 9, 25, 18, 0),
+                    room: '601',
+                },
+                {
+                    title: "Meeting R-Type",
+                    type: 'Meeting',
+                    author: 'Mike Mathieu',
+                    start: new Date(2025, 9, 22, 10, 0),
+                    end: new Date(2025, 9, 22, 11, 0),
+                    room: '602'
+                },
+                {
+                    title: "R-Type",
+                    type: 'Working',
+                    author: 'Mike Mathieu',
+                    start: new Date(2025, 9, 22, 11, 0),
+                    end: new Date(2025, 9, 22, 13, 0),
+                    room: '602'
+                }
             ];
         }, []);
 
@@ -141,7 +217,8 @@ export default function BookingCalendarSection() {
                     culture="fr"
                     selectable
                     onSelectSlot={handleSelectSlot}
-                    components={{ toolbar: () => null }}
+                    components={{ toolbar: () => null, event: EventRenderer }}
+                    eventPropGetter={(e) => eventStyleGetter(e as CalendarEvent)}
                                 style={{ height: 900 }}
                 />
             </div>

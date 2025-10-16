@@ -25,11 +25,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="fr">
       <body>
         <Header
-        username="John Doe"
-        avatarUrl="/images/68x70.svg"
-        logoUrl="/images/epitech_logo.png"
+          username="John Doe"
+          avatarUrl="/images/68x70.svg"
+          logoUrl="/images/epitech_logo.png"
         />
-        <main className="pt-24">{children}</main>
+        <main className="pt-20">{children}</main>
       </body>
     </html>
   );

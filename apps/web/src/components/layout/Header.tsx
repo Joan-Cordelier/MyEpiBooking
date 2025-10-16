@@ -5,30 +5,34 @@
 ** Header component layout
 */
 
+import Link from "next/link";
+
 interface HeaderProps {
-    username: string,
-    avatarUrl: string,
-    logoUrl: string
+  username: string,
+  avatarUrl: string,
+  logoUrl: string
 }
 
-export default function Header({username, avatarUrl, logoUrl} : HeaderProps) {
+export default function Header({ username, avatarUrl, logoUrl }: HeaderProps) {
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-4 shadow-md bg-blue-700">
-      {/* EPITECH Logo */}
-      <img
-        src={logoUrl}
-        alt="logo"
-        className="h-12 w-auto"
-      />
+    <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-3 shadow-md bg-blue-700">
+      {/* EPITECH Logo clickable to go home */}
+      <Link href="/" className="inline-flex items-center">
+        <img
+          src={logoUrl}
+          alt="Logo"
+          className="h-10 w-auto cursor-pointer"
+        />
+      </Link>
 
       {/* User Profile */}
-      <div className="flex items-center gap-4 text-white">
+      <div className="flex items-center gap-3 text-white">
         <img
           src={avatarUrl}
           alt="avatar"
-          className="w-16 h-16 rounded-xl object-cover"
+          className="w-12 h-12 rounded-xl object-cover"
         />
-        <span className="text-xl font-bold">{username}</span>
+        <span className="text-lg font-bold">{username}</span>
       </div>
     </header>
   );
