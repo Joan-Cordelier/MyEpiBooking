@@ -23,6 +23,13 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr">
+      <head>
+        {/* Flaticon UIcons */}
+        <link
+          rel="stylesheet"
+          href="https://cdn-uicons.flaticon.com/2.4.2/uicons-bold-rounded/css/uicons-bold-rounded.css"
+        />
+      </head>
       <body>
         <Header
           username="John Doe"

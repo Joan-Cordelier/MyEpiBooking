@@ -76,7 +76,7 @@ function EventRenderer({ event }: { event: CalendarEvent }) {
 export default function BookingCalendarSection() {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [view, setView] = useState<typeof Views[keyof typeof Views]>(Views.WEEK);
-    const [room, setRoom] = useState<string>();
+    const [room, setRoom] = useState<string>('601');
     const rooms: Room[] = [{name: '601', state: false}, {name: '602', state: true}, {name: '801', state: false}];
     const selectedRoom = useMemo(() => rooms.find(r => r.name === room), [rooms, room]);
 

@@ -1,3 +1,10 @@
+/*
+** EPITECH PROJECT, 2025
+** EPI BOOKING
+** File description:
+** formatDuration function
+*/
+
 import { differenceInMinutes } from 'date-fns';
 
 export function formatDuration(start: Date, end: Date): string {
@@ -6,8 +13,8 @@ export function formatDuration(start: Date, end: Date): string {
     const m = total % 60;
 
     if (h > 0 && m > 0)
-        return `${h}h${m}`; // e.g., 1h30
+        return `${h}h${m}`;
     if (h > 0)
-        return `${h}h`; // e.g., 1h, 2h
-    return `${m}min`; // e.g., 30min
+        return `${h}h`;
+    return `${m}min`;
 }
