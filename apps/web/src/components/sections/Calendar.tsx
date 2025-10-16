@@ -22,7 +22,10 @@ const localizer = dateFnsLocalizer({
     getDay: (date: Date) => date.getDay(),
     locales,
 });
-export type Room = string;
+export type Room = {
+    name: string;
+    state: boolean;
+};
 export type CalendarEvent = {
     title: string;
     type: string;
@@ -34,11 +37,12 @@ export type CalendarEvent = {
 };
 
 const TYPE_COLORS: Record<string, { bg: string; border: string }> = {
-    "Kick-off": { bg: "#DBEAFE", border: "#93C5FD" }, // blue-100 / blue-300
-    "Bootstrap": { bg: "#FEF3C7", border: "#FCD34D" }, // amber-100 / amber-300
-    "Workshop": { bg: "#DCFCE7", border: "#86EFAC" }, // green-100 / green-300
-    "Meeting": { bg: "#EDE9FE", border: "#C4B5FD" }, // violet-100 / violet-300
-    "Exam": { bg: "#FEE2E2", border: "#FCA5A5" },
+    "Kick-off": { bg: "#87bcfcff", border: "#3B82F6" },
+    "Follow-up": { bg: "#fddb54ff", border: "#F59E0B" },
+    "Meeting": { bg: "#85ffb0ff", border: "#22C55E" },
+    "Bootstrap": { bg: "#9c86fcff", border: "#8B5CF6" },
+    "Exams": { bg: "#ff7c7cff", border: "#EF4444" },
+    "Workgroup": { bg: "#0284C7", border: "#375bffff" },
 };
 
 function eventStyleGetter(event: CalendarEvent) {
@@ -70,10 +74,11 @@ function EventRenderer({ event }: { event: CalendarEvent }) {
 }
 
 export default function BookingCalendarSection() {
-    const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
+    const [currentDate, setCurrentDate] = useState(new Date());
     const [view, setView] = useState<typeof Views[keyof typeof Views]>(Views.WEEK);
-    const [room, setRoom] = useState<Room>("601");
-    const rooms: Room[] = ["601", "602", "801"];
+    const [room, setRoom] = useState<string>();
+    const rooms: Room[] = [{name: '601', state: false}, {name: '602', state: true}, {name: '801', state: false}];
+    const selectedRoom = useMemo(() => rooms.find(r => r.name === room), [rooms, room]);
 
         const allEvents = useMemo<CalendarEvent[]>(() => {
             return [
@@ -83,7 +88,7 @@ export default function BookingCalendarSection() {
                     author: 'Sebastien Goby',
                     start: new Date(2025, 9, 22, 9, 0),
                     end: new Date(2025, 9, 22, 10, 0),
-                    room: "601",
+                    room: rooms.find(r => r.name === '601')
                 },
                 {
                     title: "Bootstrap my_printf",
@@ -91,7 +96,7 @@ export default function BookingCalendarSection() {
                     author: 'Sebastien Goby',
                     start: new Date(2025, 9, 22, 10, 0), // Mercredi 22/10/2025 10:00–12:00 [601]
                     end: new Date(2025, 9, 22, 12, 0),
-                    room: '601',
+                    room: rooms.find(r => r.name === '601')
                 },
                 {
                     title: "Kick-off Final Stumper",
@@ -99,15 +104,15 @@ export default function BookingCalendarSection() {
                     author: 'Sebastien Goby',
                     start: new Date(2025, 9, 25, 9, 0),
                     end: new Date(2025, 9, 25, 10, 0),
-                    room: '601'
+                    room: rooms.find(r => r.name === '601')
                 },
                 {
                     title: "Final Stumper",
-                    type: 'Exam',
+                    type: 'Exams',
                     author: 'Sebastien Goby',
                     start: new Date(2025, 9, 25, 10, 0),
                     end: new Date(2025, 9, 25, 18, 0),
-                    room: '601',
+                    room: rooms.find(r => r.name === '601')
                 },
                 {
                     title: "Meeting R-Type",
@@ -115,31 +120,39 @@ export default function BookingCalendarSection() {
                     author: 'Mike Mathieu',
                     start: new Date(2025, 9, 22, 10, 0),
                     end: new Date(2025, 9, 22, 11, 0),
-                    room: '602'
+                    room: rooms.find(r => r.name === '602')
                 },
                 {
                     title: "R-Type",
-                    type: 'Working',
+                    type: 'Workgroup',
                     author: 'Mike Mathieu',
                     start: new Date(2025, 9, 22, 11, 0),
                     end: new Date(2025, 9, 22, 13, 0),
-                    room: '602'
+                    room: rooms.find(r => r.name === '602')
                 }
             ];
         }, []);
 
         const events = useMemo<CalendarEvent[]>(() => {
-            return allEvents.filter((e) => !room || e.room === room);
+            return allEvents.filter((e) => !room || (e.room && e.room.name === room));
         }, [allEvents, room]);
 
-    const weekLabel = useMemo(() => {
-        const end = addDays(currentWeekStart, 6);
-        return `${format(currentWeekStart, "dd/MM", { locale: fr })} - ${format(end, "dd/MM", { locale: fr })}`;
-    }, [currentWeekStart]);
+    const navLabel = useMemo(() => {
+        if (view === Views.DAY) {
+            return `Jour du ${format(currentDate, "EEEE dd/MM", { locale: fr })}`;
+        }
+        const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
+        const end = addDays(weekStart, 6);
+        return `Semaine du ${format(weekStart, "dd/MM", { locale: fr })} - ${format(end, "dd/MM", { locale: fr })}`;
+    }, [currentDate, view]);
 
-    const onPrev = useCallback(() => setCurrentWeekStart((d) => addWeeks(d, -1)), []);
-    const onNext = useCallback(() => setCurrentWeekStart((d) => addWeeks(d, 1)), []);
-    const onToday = useCallback(() => setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 })), []);
+    const onPrev = useCallback(() => {
+        setCurrentDate((d) => (view === Views.DAY ? addDays(d, -1) : addWeeks(d, -1)));
+    }, [view]);
+    const onNext = useCallback(() => {
+        setCurrentDate((d) => (view === Views.DAY ? addDays(d, 1) : addWeeks(d, 1)));
+    }, [view]);
+    const onToday = useCallback(() => setCurrentDate(new Date()), []);
     const handleSelectSlot = useCallback((slot: SlotInfo) => {
         console.log("Select slot:", slot.start, slot.end);
     }, []);
@@ -176,7 +189,7 @@ export default function BookingCalendarSection() {
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
                         </button>
                     </div>
-                    <div className="ml-2 text-sm font-semibold text-neutral-700">Semaine du {weekLabel}</div>
+                    <div className="ml-2 text-sm font-semibold text-neutral-700">{navLabel}</div>
                 </div>
                 <div className="flex items-center gap-3">
                     <div className="inline-flex items-center rounded-md shadow-sm overflow-hidden border border-black/10">
@@ -195,8 +208,8 @@ export default function BookingCalendarSection() {
                             Semaine
                         </button>
                     </div>
-                    <RoomSelector rooms={rooms} value={room} onChange={setRoom} />
-                    <ReserveButton />
+                    <RoomSelector rooms={rooms.map(r => r.name)} value={room} onChange={setRoom} />
+                    <ReserveButton disabled={!selectedRoom?.state} />
                 </div>
             </div>
                     <div className="rbc-epi rounded-2xl border border-black/20 bg-white p-3 md:p-4">
@@ -207,8 +220,8 @@ export default function BookingCalendarSection() {
                     endAccessor="end"
                     view={view}
                     onView={(v) => setView(v)}
-                    date={currentWeekStart}
-                    onNavigate={(d) => setCurrentWeekStart(startOfWeek(d, { weekStartsOn: 1 }))}
+                    date={currentDate}
+                    onNavigate={(d) => setCurrentDate(d)}
                     views={[Views.WEEK, Views.DAY]}
                     step={30}
                     timeslots={2}
