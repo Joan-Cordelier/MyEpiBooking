@@ -36,7 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           avatarUrl="/images/68x70.svg"
           logoUrl="/images/epitech_logo.png"
         />
-        <main className="pt-20">{children}</main>
+  <main className="pt-16">{children}</main>
       </body>
     </html>
   );
