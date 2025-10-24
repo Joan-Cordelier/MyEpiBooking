@@ -271,19 +271,131 @@ NEXTAUTH_URL="https://..."
 - Composants: Storybook pour la UI library
 - Architecture: Documentation technique dans `/docs`
 
-## Contribution
+## Workflow Git & Contribution
 
-1. Fork le projet
-2. Créer une branche feature (`git checkout -b frontend/vr-visite`)
-3. Commit les changements (`git commit -m 'ADD: vr visite'`)
-4. Push sur la branche (`git push origin frontend/vr-visite`)
-5. Ouvrir une Pull Request
+### Structure des Branches
+
+```
+main (production)
+  ^
+  |
+dev (intégration)
+  ^
+  |
+feature/* (développement)
+```
+
+### Convention de Nommage des Branches
+
+```bash
+# Features
+feature/<scope>/<description>
+feature/back/user-crud
+feature/front/calendar-view
+feature/mobile/push-notifications
+feature/full-stack/booking-flow
+
+# Corrections de bugs
+bugfix/<scope>/<description>
+bugfix/api/auth-validation
+
+# Hotfixes (urgents, depuis main)
+hotfix/<description>
+hotfix/security-patch
+
+# Maintenance
+chore/<description>
+chore/update-dependencies
+```
+
+### Convention de Commit
+
+```bash
+<TYPE>: <description courte>
+
+Types:
+ADD:      Nouvelle fonctionnalité
+FIX:      Correction de bug
+REFACTOR: Restructuration du code
+DOCS:     Documentation
+TEST:     Tests
+CHORE:    Maintenance
+STYLE:    Formatage
+PERF:     Optimisation performance
+```
+
+### Processus de Contribution
+
+1. **Créer une issue GitHub** pour la fonctionnalité/bug
+   ```
+   Issue #42: Implémenter le CRUD des utilisateurs
+   ```
+
+2. **Créer une branche depuis `dev`**
+   ```bash
+   git checkout dev
+   git pull origin dev
+   git checkout -b feature/back/user-crud
+   ```
+
+3. **Développer et commiter régulièrement**
+   ```bash
+   git add .
+   git commit -m "ADD: user Prisma model and schema"
+   git commit -m "ADD: user CRUD endpoints"
+   git commit -m "TEST: user controller tests"
+   ```
+
+4. **Pousser et créer une Pull Request vers `dev`**
+   ```bash
+   git push origin feature/back/user-crud
+   ```
+   - Titre: "ADD: User CRUD operations"
+   - Description: "Closes #42"
+   - Assigner un reviewer approprié
+   - Ajouter des labels (backend/frontend/mobile)
+
+5. **Code Review**
+   - Le reviewer (Joan/Sacha/Mike selon le scope) examine le code
+   - Les tests CI/CD doivent passer
+   - Corrections si nécessaires
+
+6. **Merge vers `dev`**
+   - Après approbation, merge via GitHub
+   - L'issue se ferme automatiquement
+   - La branche feature est supprimée
+
+7. **Release vers `main`**
+   - Périodiquement, créer une PR `dev` -> `main`
+   - Require 2 approbations pour production
+   - Tag la version (`v1.0.0`, `v1.1.0`, etc.)
+
+### Répartition des Reviews
+
+- **Backend (Joan)**: Revoit les PRs `feature/back/*` et `feature/full-stack/*`
+- **Frontend Web (Sacha)**: Revoit les PRs `feature/front/*` et `feature/full-stack/*`
+- **Mobile (Mike)**: Revoit les PRs `feature/mobile/*` et `feature/full-stack/*`
+
+### Règles de Protection des Branches
+
+#### Branch `main`:
+- ❌ Push direct interdit
+- ✅ PR depuis `dev` uniquement
+- ✅ 2 approbations requises
+- ✅ CI/CD doit passer
+
+#### Branch `dev`:
+- ❌ Push direct interdit
+- ✅ PR depuis feature branches
+- ✅ 1 approbation requise (reviewer approprié)
+- ✅ CI/CD doit passer
+- ✅ Suppression auto des branches après merge
 
 ## Licence
 
 Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
 
-## 📞 Contact
+## Contact
 
 **Équipe MyEpiBooking**
 - Email: contact@myepibooking.eu
