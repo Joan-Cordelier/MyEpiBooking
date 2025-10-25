@@ -1,0 +1,80 @@
+name: Feature Request
+description: Proposer une nouvelle fonctionnalité
+title: "[FEATURE] "
+labels: ["enhancement", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Merci de proposer cette nouvelle feature !
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope
+      description: Quelle partie de l'application ?
+      options:
+        - Backend (API)
+        - Frontend (Web)
+        - Mobile
+        - Full-stack
+        - Infrastructure
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description de la fonctionnalité
+      description: Décris la feature souhaitée
+      placeholder: Je voudrais pouvoir...
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problème résolu
+      description: Quel problème cette feature résout-elle ?
+      placeholder: Actuellement, il est difficile de...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Solution proposée
+      description: Comment imagines-tu cette feature ?
+      placeholder: |
+        1. Ajouter un bouton...
+        2. Créer une API endpoint...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considérées
+      description: As-tu pensé à d'autres solutions ?
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priorité
+      options:
+        - Low (Nice to have)
+        - Medium (Important)
+        - High (Très important)
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: mvp
+    attributes:
+      label: MVP
+      description: Cette feature fait-elle partie du MVP ?
+      options:
+        - label: Oui, fait partie du MVP
+        - label: Non, fonctionnalité avancée

@@ -1,0 +1,30 @@
+backend:
+  - apps/api/**/*
+  - apps/api/**
+
+frontend:
+  - apps/web/**/*
+  - apps/web/**
+
+mobile:
+  - apps/mobile/**/*
+  - apps/mobile/**
+
+packages:
+  - packages/**/*
+
+documentation:
+  - '*.md'
+  - 'docs/**/*'
+
+configuration:
+  - '*.json'
+  - '*.yaml'
+  - '*.yml'
+  - '.github/**/*'
+
+tests:
+  - '**/*.test.ts'
+  - '**/*.test.tsx'
+  - '**/*.spec.ts'
+  - '**/tests/**'
