@@ -1,0 +1,37 @@
+backend:
+  - changed-files:
+    - any-glob-to-any-file: 'apps/api/**/*'
+
+frontend:
+  - changed-files:
+    - any-glob-to-any-file: 'apps/web/**/*'
+
+mobile:
+  - changed-files:
+    - any-glob-to-any-file: 'apps/mobile/**/*'
+
+packages:
+  - changed-files:
+    - any-glob-to-any-file: 'packages/**/*'
+
+documentation:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '*.md'
+      - 'docs/**/*'
+
+configuration:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '*.json'
+      - '*.yaml'
+      - '*.yml'
+      - '.github/**/*'
+
+tests:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/*.test.ts'
+      - '**/*.test.tsx'
+      - '**/*.spec.ts'
+      - '**/tests/**'

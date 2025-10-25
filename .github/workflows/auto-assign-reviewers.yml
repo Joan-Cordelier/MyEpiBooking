@@ -1,0 +1,57 @@
+name: Auto Assign Reviewers
+
+on:
+  pull_request:
+    types: [opened, ready_for_review]
+
+jobs:
+  assign-reviewers:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Assign Backend Reviewer
+        if: contains(github.event.pull_request.labels.*.name, 'backend')
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.pulls.requestReviewers({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              reviewers: ['Joan-Cordelier']
+            })
+
+      - name: Assign Frontend Reviewer
+        if: contains(github.event.pull_request.labels.*.name, 'frontend')
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.pulls.requestReviewers({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              reviewers: ['sacha-vedovatti']
+            })
+
+      - name: Assign Mobile Reviewer
+        if: contains(github.event.pull_request.labels.*.name, 'mobile')
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.pulls.requestReviewers({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              reviewers: ['mamat19']
+            })
+
+      - name: Assign Full-Stack Reviewers
+        if: contains(github.event.pull_request.labels.*.name, 'full-stack')
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.pulls.requestReviewers({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              reviewers: ['Joan-Cordelier', 'sacha-vedovatti', 'mamat19']
+            })

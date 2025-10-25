@@ -1,0 +1,91 @@
+name: Bug Report
+description: Signaler un bug
+title: "[BUG] "
+labels: ["bug", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Merci de prendre le temps de signaler ce bug !
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope
+      description: Quelle partie de l'application est concernée ?
+      options:
+        - Backend (API)
+        - Frontend (Web)
+        - Mobile
+        - Full-stack
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description du bug
+      description: Décris le bug de manière claire
+      placeholder: Quand je clique sur..., alors...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Étapes pour reproduire
+      description: Comment reproduire le bug ?
+      placeholder: |
+        1. Aller sur '...'
+        2. Cliquer sur '...'
+        3. Voir l'erreur
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Comportement attendu
+      description: Que devrait-il se passer normalement ?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Comportement actuel
+      description: Que se passe-t-il réellement ?
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs d'erreur
+      description: Copie les logs/erreurs console
+      render: shell
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priorité
+      options:
+        - Low (Mineur)
+        - Medium (Normal)
+        - High (Urgent)
+        - Critical (Bloquant)
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environnement
+      description: |
+        OS, Browser, Node version, etc.
+      placeholder: |
+        - OS: Ubuntu 22.04
+        - Browser: Chrome 120
+        - Node: 20.10.0
