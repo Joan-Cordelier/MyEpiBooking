@@ -429,15 +429,15 @@ PERF:     Optimisation performance
      gh pr create --base main --title "RELEASE: v1.0.0" --body "
      ## Release v1.0.0
      
-     ### ✨ Nouvelles fonctionnalités
+     ### Nouvelles fonctionnalités
      - Authentification utilisateurs
      - Système de réservation de salles
      - Vue calendrier
      
-     ### 🐛 Corrections
+     ### Corrections
      - Fix validation anti-chevauchement
      
-     ### 📝 Documentation
+     ### Documentation
      - README complet
      - Swagger API docs
      "
@@ -448,7 +448,7 @@ PERF:     Optimisation performance
      git tag -a v1.0.0 -m "Release v1.0.0 - MVP"
      git push origin v1.0.0
      
-     # 6. IMPORTANT : Merge back main → dev
+     # 6. IMPORTANT : Merge back main -> dev
      git checkout dev
      git merge main --no-ff -m "MERGE: sync main v1.0.0 into dev"
      git push origin dev
@@ -551,7 +551,7 @@ gh pr create --base dev --title "ADD: JWT authentication" --body "Closes #15"
 
 # Sacha review et approve
 # GitHub Actions: ✅ auto-label "backend", auto-assign Joan
-# Merge → dev, issue #15 se ferme, branche supprimée
+# Merge -> dev, issue #15 se ferme, branche supprimée
 ```
 
 #### 🎯 Exemple 2 : Feature Full-Stack (Booking System)
@@ -576,7 +576,7 @@ git checkout -b feature/mobile/booking-screen
 # ... développe mobile
 gh pr create --base dev --title "ADD: Booking mobile screens"
 
-# Toutes les PRs mergées → Feature complète dans dev
+# Toutes les PRs mergées -> Feature complète dans dev
 ```
 
 #### 🎯 Exemple 3 : Release v1.0.0 (MVP)
