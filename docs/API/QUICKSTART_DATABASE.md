@@ -85,7 +85,7 @@ Health check: http://localhost:3001/health
 
 Pour plus de détails, configuration manuelle, ou troubleshooting :
 
-**[docs/DATABASE_SETUP.md](./DATABASE_SETUP.md)**
+**[docs/API/DATABASE_SETUP.md](./DATABASE_SETUP.md)**
 
 ## Problèmes courants
 
