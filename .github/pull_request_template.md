@@ -17,6 +17,7 @@
 - [ ] Frontend (apps/web)
 - [ ] Mobile (apps/mobile)
 - [ ] Packages
+- [ ] Infrastructure / Documentation
 
 ## Changements
 <!-- Liste les changements principaux -->
