@@ -1,0 +1,118 @@
+name: Backend Implementation Task
+description: Track backend API implementation work
+title: "[BACKEND] "
+labels: ["enhancement", "backend"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Backend Implementation Task
+        Use this template to track backend API development work.
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: What type of backend work is this?
+      options:
+        - Configuration
+        - Utilities
+        - Middleware
+        - Authentication
+        - Service (CRUD)
+        - Controller
+        - Routes
+        - Infrastructure
+        - Database
+    validations:
+      required: true
+
+  - type: textarea
+    id: task
+    attributes:
+      label: Task Description
+      description: What needs to be implemented?
+      placeholder: |
+        Create auth service with register, login, and JWT management
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria
+      description: What must be completed? (Use checkboxes)
+      placeholder: |
+        - [ ] Create `src/services/auth.service.ts`
+        - [ ] Implement `register(email, password, campusId)` function
+        - [ ] Implement `login(email, password)` function
+        - [ ] Implement `hashPassword(password)` function
+        - [ ] Implement `verifyPassword(password, hash)` function
+        - [ ] Implement `generateToken(userId)` function
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: Implementation Details
+      description: Any specific requirements or technical details?
+      placeholder: |
+        - Hash passwords with bcrypt (10 rounds)
+        - Validate email uniqueness
+        - Return user object + JWT token
+        - Handle Prisma errors properly
+
+  - type: textarea
+    id: references
+    attributes:
+      label: References & Documentation
+      description: Links to relevant docs, guides, or examples
+      placeholder: |
+        - [API Setup Guide](docs/API/API_SETUP.md)
+        - [Prisma Docs](https://www.prisma.io/docs)
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: What issues must be completed first?
+      placeholder: |
+        Requires: #1, #2, #3
+
+  - type: dropdown
+    id: milestone
+    attributes:
+      label: Milestone
+      description: Which milestone does this belong to?
+      options:
+        - Backend API Implementation
+        - Frontend Development
+        - Mobile Development
+        - Database Setup
+        - Testing & QA
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - P0 - Critical (Blocks other work)
+        - P1 - High (Core functionality)
+        - P2 - Medium (Important but not blocking)
+        - P3 - Low (Nice to have)
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: mvp
+    attributes:
+      label: MVP Status
+      description: Is this required for MVP?
+      options:
+        - label: Required for MVP
+        - label: Post-MVP enhancement
