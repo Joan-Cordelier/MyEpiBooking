@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum UserRight {
+    EDIT_USER
+    EDIT_ROOM
+    EDIT_RESERVATION
+    EDIT_RIGHTS
+    BOOK_ROOM
+    HOST_MEETING
+}
+
+enum RoomState {
+    RESERVABLE
+    NON_RESERVABLE
+}
+
+enum ReservationType {
+    MEETING
+    WORK
+    KICK_OFF
+    BOOTHING
+    WORKSHOP
+    TALK
+    UNEXPECTED
+}
+
+// ============================================
+// MODELS
+// ============================================
+
+model User {
+    id                  String         @id @default(cuid())
+    email               String         @unique
+    password            String
+    name                String?
+    firstName           String?
+    actual_promotion    String?
+    photo               String?
+    Right               UserRight[]
+    campusId            String
+    campus              Campus        @relation(fields: [campusId], references: [id], onDelete: Cascade)
+    reservations        Reservation[]
+    createdAt           DateTime       @default(now())
+    updatedAt           DateTime       @updatedAt
+    @@map("users")
+}
+
+model Campus {
+    id       String  @id @default(cuid())
+    name     String  @unique
+    city     String
+    address  String?
+    rooms    Room[]
+    users    User[]
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    @@map("campus")
+}
+
+model Room {
+    id            String      @id @default(cuid())
+    name          String
+    floor         String
+    state         RoomState   @default(RESERVABLE)
+    capacity      Int
+    description   String
+    campusId      String
+    campus        Campus        @relation(fields: [campusId], references: [id], onDelete: Cascade)
+    inventory     Inventory?
+    reservations  Reservation[]
+    createdAt     DateTime      @default(now())
+    updatedAt     DateTime      @updatedAt
+    @@unique([campusId, name])
+    @@map("rooms")
+}
+
+model Inventory {
+    id          String   @id @default(cuid())
+    tables      Int      @default(0)
+    chairs      Int      @default(0)
+    hasBoard    Boolean  @default(false)
+    hasTV       Boolean  @default(false)
+    notes       String?
+    roomId      String   @unique
+    room        Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+    @@map("inventories")
+}
+
+model Reservation {
+    id          String            @id @default(cuid())
+    type        ReservationType
+    title       String
+    description String?
+    startDate   DateTime
+    endDate     DateTime
+    userId      String
+    user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+    roomId      String
+    room        Room              @relation(fields: [roomId], references: [id], onDelete: Cascade)
+    createdAt   DateTime          @default(now())
+    updatedAt   DateTime          @updatedAt
+    @@index([roomId, startDate, endDate])
+    @@index([userId])
+    @@map("reservations")
+}
