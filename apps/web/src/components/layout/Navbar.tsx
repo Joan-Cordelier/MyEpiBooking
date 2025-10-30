@@ -63,7 +63,7 @@ export default function Navbar() {
 						<Link href="#" className="group relative w-40 h-8 inline-flex items-center gap-3">
 							<div className="pointer-events-none absolute left-[-11px] top-[-3px] w-48 h-9 bg-[#0032D7]/50 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity" aria-hidden="true"></div>
 							<i className="fi fi-br-circle-user text-lg text-blue-700/50 group-hover:text-blue-700" aria-hidden="true"></i>
-							<span className={`${istok.className} text-lg font-bold text-black/50 group-hover:text-black`}>Profil</span>
+							<span className={`${istok.className} text-lg font-bold text-black/50 group-hover:text-black`}>Profile</span>
 						</Link>
 						<Link href="#" className="group relative w-40 h-8 inline-flex items-center gap-3">
 							<div className="pointer-events-none absolute left-[-11px] top-[-3px] w-48 h-9 bg-[#0032D7]/50 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity" aria-hidden="true"></div>

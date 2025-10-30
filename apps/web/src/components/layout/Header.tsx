@@ -75,7 +75,7 @@ export default function Header({ username, avatarUrl, logoUrl, onLogout }: Heade
 
         </button>
 
-        {menuOpen && (
+        {/* {menuOpen && (
           <div
             role="menu"
             aria-label="menu utilisateur"
@@ -97,7 +97,7 @@ export default function Header({ username, avatarUrl, logoUrl, onLogout }: Heade
               </span>
             </button>
           </div>
-        )}
+        )} */}
       </div>
     </header>
   );
