@@ -6,6 +6,7 @@
 */
 
 import Header from "@/components/layout/Header";
+import Navbar from "@/components/layout/Navbar";
 import "./globals.css";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "@/styles/rbc-overrides.css";
@@ -29,6 +30,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
           href="https://cdn-uicons.flaticon.com/2.4.2/uicons-bold-rounded/css/uicons-bold-rounded.css"
         />
+        <link
+          rel="stylesheet"
+          href="https://cdn-uicons.flaticon.com/2.4.2/uicons-solid-rounded/css/uicons-solid-rounded.css"
+        />
       </head>
       <body>
         <Header
@@ -36,7 +41,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           avatarUrl="/images/68x70.svg"
           logoUrl="/images/epitech_logo.png"
         />
-  <main className="pt-16">{children}</main>
+        <Navbar />
+        <main className="pt-16 pl-56">{children}</main>
       </body>
     </html>
   );
