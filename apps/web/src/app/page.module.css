@@ -1,0 +1,25 @@
+/* Styles for Home page generated from Figma design
+   - Makes the canvas centered and responsive
+   - Keeps design max width at 1440px and scales on smaller viewports
+*/
+.pageWrapper {
+  min-height: 100vh; /* full viewport height */
+  display: block; /* stop centering to allow top-left anchor */
+  background: white;
+  overflow: auto; /* allow scrolling when scaled */
+}
+
+.canvas {
+  width: 100%;
+  max-width: none; /* let it take full width */
+  height: auto;
+  min-height: 100vh; /* allow it to stretch if content taller */
+  position: relative;
+  background: white;
+}
+
+@media (max-width: 768px) {
+  .canvas {
+    padding: 12px 8px; /* small padding for small screens */
+  }
+}
