@@ -5,8 +5,7 @@
 ** Layout file
 */
 
-import Header from "@/components/layout/Header";
-import Navbar from "@/components/layout/Navbar";
+import PageFrame from "@/components/layout/PageFrame";
 import "./globals.css";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "@/styles/rbc-overrides.css";
@@ -36,13 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-        <Header
-          username="John Doe"
-          avatarUrl="/images/68x70.svg"
-          logoUrl="/images/epitech_logo.png"
-        />
-        <Navbar />
-        <main className="pt-16 pl-56">{children}</main>
+        <PageFrame>{children}</PageFrame>
       </body>
     </html>
   );
