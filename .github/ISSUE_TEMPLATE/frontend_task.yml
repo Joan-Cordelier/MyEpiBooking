@@ -1,0 +1,117 @@
+name: Frontend Implementation Task
+description: Track Front implementation work
+title: "[FRONTEND] "
+labels: ["enhancement", "front", "frontend"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Frontend Implementation Task
+        Use this template to track frontend features development work.
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: What type of frontend work is this?
+      options:
+        - UI Component
+        - Authentication System
+        - Routes / Pages
+        - Infrastructure
+        - Styling / Theming
+        - Tests
+        - Accessibility
+    validations:
+      required: true
+
+  - type: textarea
+    id: task
+    attributes:
+      label: Task Description
+      description: What needs to be implemented?
+      placeholder: |
+        Implement a reusable `LoginForm` component that handles user input, validation and calls the auth service.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria
+      description: What must be completed? (Use checkboxes)
+      placeholder: |
+        - [ ] Create `src/components/LoginForm/LoginForm.tsx` (with tests)
+        - [ ] Add form validation and inline error messages
+        - [ ] Integrate with `src/services/auth.service.ts` for login
+        - [ ] Show loading state and error handling in the UI
+        - [ ] Add unit tests (coverage for form logic) and one E2E test
+        - [ ] Ensure component passes basic accessibility checks (aria-labels, keyboard)
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: Implementation Details
+      description: Any specific requirements or technical details?
+      placeholder: |
+        - Use React + TypeScript
+        - Reuse existing design tokens from `src/styles/tokens`
+        - Provide storybook story and documentation
+        - Keep animations minimal and performant
+
+  - type: textarea
+    id: references
+    attributes:
+      label: References & Documentation
+      description: Links to relevant docs, guides, or examples
+      placeholder: |
+        - [Design system - Buttons & Forms](docs/design/FORM_COMPONENTS.md)
+        - [Frontend Architecture](docs/frontend/ARCHITECTURE.md)
+        - Example component: `src/components/Button/Button.tsx`
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: What issues must be completed first?
+      placeholder: |
+        Depends on: #12 (API: login endpoint), #34 (Auth service scaffolding)
+
+  - type: dropdown
+    id: milestone
+    attributes:
+      label: Milestone
+      description: Which milestone does this belong to?
+      options:
+        - Backend API Implementation
+        - Frontend Development
+        - Mobile Development
+        - Database Setup
+        - Testing & QA
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - P0 - Critical (Blocks other work)
+        - P1 - High (Core functionality)
+        - P2 - Medium (Important but not blocking)
+        - P3 - Low (Nice to have)
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: mvp
+    attributes:
+      label: MVP Status
+      description: Is this required for MVP?
+      options:
+        - label: Required for MVP
+        - label: Post-MVP enhancement
