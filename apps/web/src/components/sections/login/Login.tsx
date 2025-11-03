@@ -9,8 +9,9 @@
 
 import { Anton } from "next/font/google";
 import { useRouter } from "next/navigation";
-import { FormEvent } from "react";
 import AdminLogin from "@/components/ui/AdminLogin";
+
+import { handleMicrosoftLogin, handleLogin } from "./login"
 
 const anton = Anton({ subsets: ["latin"], weight: "400" });
 
@@ -22,20 +23,9 @@ type LoginProps = {
 };
 
 export default function Login({
-	onEpitechLogin,
-	onAdminLogin,
 	topLogoSrc = "https://placehold.co/328x81",
 	titleImageSrc = "https://placehold.co/431x100",
 }: LoginProps) {
-	const router = useRouter();
-
-	function handleEpitechLogin() {
-		if (onEpitechLogin)
-            return onEpitechLogin();
-		console.log("Epitech login clicked");
-		router.push("/schedule"); //FAKE REDIRECTION
-	}
-
     return (
         <section className="w-full min-h-[80vh] bg-white overflow-hidden flex items-center justify-center">
             <div className="w-[891px] h-[587px] rounded-xl border border-black/50 bg-transparent flex">
@@ -56,7 +46,7 @@ export default function Login({
 
                     <button
                         type="button"
-                        onClick={handleEpitechLogin}
+                        onClick={handleMicrosoftLogin}
                         className={`mt-8 w-[556px] h-7 bg-blue-700 text-white flex items-center justify-center hover:brightness-95 transition-all ${anton.className}`}
                         aria-label="Se connecter avec un compte Epitech"
                     >
@@ -69,7 +59,7 @@ export default function Login({
 
                     <AdminLogin
                         className={`mt-4 w-[556px] h-7`}
-                        onSubmit={onAdminLogin}
+                        onSubmit={handleLogin}
                     />
                 </div>
             </div>

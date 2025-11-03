@@ -2,13 +2,13 @@
 ** EPITECH PROJECT, 2025
 ** EPI BOOKING
 ** File description:
-** Login page
+** Login route (no header/navbar)
 */
 
 "use client";
 
 import styles from "../page.module.css";
-import LoginSection from "@/components/sections/Login";
+import LoginSection from "@/components/sections/login/Login";
 
 export default function Login() {
     return (

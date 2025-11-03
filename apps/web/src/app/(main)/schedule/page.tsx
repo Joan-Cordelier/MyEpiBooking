@@ -2,13 +2,13 @@
 ** EPITECH PROJECT, 2025
 ** EPI BOOKING
 ** File description:
-** Scedule page
+** Schedule page (grouped under main layout)
 */
 
 "use client";
 
-import styles from "../page.module.css";
-import BookingCalendarSection from "@/components/sections/Calendar";
+import styles from "../../page.module.css";
+import BookingCalendarSection from "@/components/sections/calendar/Calendar";
 
 export default function Schedule() {
   return (

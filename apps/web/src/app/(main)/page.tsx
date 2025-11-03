@@ -2,13 +2,12 @@
 ** EPITECH PROJECT, 2025
 ** EPI BOOKING
 ** File description:
-** Homepage
+** Homepage (grouped under main layout)
 */
 
 "use client";
 
-import styles from "./page.module.css";
-import BookingCalendarSection from "@/components/sections/Calendar";
+import styles from "../page.module.css";
 
 export default function Home() {
   return (
