@@ -24,6 +24,7 @@ body:
         - Styling / Theming
         - Tests
         - Accessibility
+        - Backend Connection
     validations:
       required: true
 
