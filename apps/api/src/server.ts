@@ -6,12 +6,7 @@ import { corsConfig } from './config/cors';
 import { connectDatabase, disconnectDatabase, prisma } from './config/database';
 import { logger } from './utils/logger';
 import { errorHandler } from './middleware/error.middleware';
-import authRoutes from './routes/auth.routes';
-import campusRoutes from './routes/campus.routes';
-import roomRoutes from './routes/room.routes';
-import inventoryRoutes from './routes/inventory.routes';
-import reservationRoutes from './routes/reservation.routes';
-import userRoutes from './routes/user.routes';
+import apiRouter from './routes/index';
 
 const app = express();
 
@@ -22,12 +17,7 @@ app.use(pinoHttp({ logger }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-app.use('/api/auth', authRoutes);
-app.use('/api/campus', campusRoutes);
-app.use('/api/rooms', roomRoutes);
-app.use('/api/inventories', inventoryRoutes);
-app.use('/api/reservations', reservationRoutes);
-app.use('/api/users', userRoutes);
+app.use('/api', apiRouter);
 
 app.get('/health', async (_req: Request, res: Response) => {
     const uptime = Math.floor((Date.now() - startTime) / 1000);
