@@ -6,6 +6,7 @@ import { corsConfig } from './config/cors';
 import { connectDatabase, disconnectDatabase, prisma } from './config/database';
 import { logger } from './utils/logger';
 import { errorHandler } from './middleware/error.middleware';
+import authRoutes from './routes/auth.routes';
 import campusRoutes from './routes/campus.routes';
 import roomRoutes from './routes/room.routes';
 import inventoryRoutes from './routes/inventory.routes';
@@ -21,6 +22,7 @@ app.use(pinoHttp({ logger }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+app.use('/api/auth', authRoutes);
 app.use('/api/campus', campusRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/inventories', inventoryRoutes);
@@ -64,6 +66,9 @@ app.get('/api', (_req: Request, res: Response) => {
         endpoints: {
             health: 'GET /health',
             info: 'GET /api',
+            register: 'POST /api/auth/register',
+            login: 'POST /api/auth/login',
+            me: 'GET /api/auth/me',
             campuses: 'GET /api/campus',
             createCampus: 'POST /api/campus',
             updateCampus: 'PUT /api/campus/:id',
