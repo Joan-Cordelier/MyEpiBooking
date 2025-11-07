@@ -306,11 +306,11 @@ feature/*, bugfix/*, hotfix/*, chore/*
 
 ### Pourquoi ce Workflow ?
 
-✅ **Branche `main` propre** : Uniquement du code testé, validé et déployé en production
-✅ **Intégration continue sur `dev`** : Détection rapide des conflits entre features
-✅ **Releases contrôlées** : Chaque release est un point de contrôle avant production
-✅ **Rollback facile** : Retour à une version stable via les tags Git
-✅ **Historique clair** : `main` = historique des releases, `dev` = historique du développement
+ **Branche `main` propre** : Uniquement du code testé, validé et déployé en production
+ **Intégration continue sur `dev`** : Détection rapide des conflits entre features
+ **Releases contrôlées** : Chaque release est un point de contrôle avant production
+ **Rollback facile** : Retour à une version stable via les tags Git
+ **Historique clair** : `main` = historique des releases, `dev` = historique du développement
 
 ### Structure des Branches
 
@@ -484,23 +484,23 @@ v2.0.0  # Refonte API auth (breaking change)
 
 #### Branch `main` (Production):
 - ❌ Push direct **strictement interdit**
-- ✅ PR depuis `release/*` ou `hotfix/*` uniquement
-- ✅ **2 approbations requises** (protection maximale)
-- ✅ Tous les checks CI/CD doivent passer
-- ✅ Branche doit être à jour avant merge
-- ✅ Inclut les administrateurs (même les admins suivent les règles)
+-  PR depuis `release/*` ou `hotfix/*` uniquement
+-  **2 approbations requises** (protection maximale)
+-  Tous les checks CI/CD doivent passer
+-  Branche doit être à jour avant merge
+-  Inclut les administrateurs (même les admins suivent les règles)
 - 🏷️ **Chaque merge = 1 tag de version**
 
 #### Branch `dev` (Intégration - DEFAULT):
 - ❌ Push direct interdit
-- ✅ PR depuis `feature/*`, `bugfix/*`, `chore/*`
-- ✅ **1 approbation requise** (reviewer selon scope)
-- ✅ Tous les checks CI/CD doivent passer
-- ✅ Suppression automatique des branches après merge
+-  PR depuis `feature/*`, `bugfix/*`, `chore/*`
+-  **1 approbation requise** (reviewer selon scope)
+-  Tous les checks CI/CD doivent passer
+-  Suppression automatique des branches après merge
 - 🔄 **Base par défaut** pour toutes les nouvelles PRs
 
 #### Feature Branches (Développement):
-- ✅ Push direct autorisé (c'est ton espace de travail)
+-  Push direct autorisé (c'est ton espace de travail)
 - ⏱️ Durée de vie courte (< 1 semaine idéalement)
 - 🗑️ Supprimées automatiquement après merge
 
@@ -550,7 +550,7 @@ git push origin feature/back/jwt-auth
 gh pr create --base dev --title "ADD: JWT authentication" --body "Closes #15"
 
 # Sacha review et approve
-# GitHub Actions: ✅ auto-label "backend", auto-assign Joan
+# GitHub Actions:  auto-label "backend", auto-assign Joan
 # Merge -> dev, issue #15 se ferme, branche supprimée
 ```
 
