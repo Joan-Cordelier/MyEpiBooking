@@ -46,7 +46,7 @@ const envSchema = zod.object({
     // Logging Configuration
     LOG_LEVEL: zod
         .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace'])
-        .default('info'),
+        .optional(),
 });
 
 const parseEnv = () => {
