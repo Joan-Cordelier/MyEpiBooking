@@ -8,6 +8,7 @@ import { logger } from './utils/logger';
 import { errorHandler } from './middleware/error.middleware';
 import campusRoutes from './routes/campus.routes';
 import roomRoutes from './routes/room.routes';
+import inventoryRoutes from './routes/inventory.routes';
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 app.use('/api/campus', campusRoutes);
 app.use('/api/rooms', roomRoutes);
+app.use('/api/inventories', inventoryRoutes);
 
 app.get('/health', async (_req: Request, res: Response) => {
     const uptime = Math.floor((Date.now() - startTime) / 1000);
@@ -67,6 +69,12 @@ app.get('/api', (_req: Request, res: Response) => {
             updateRoom: 'PUT /api/rooms/:id',
             updateRoomState: 'PATCH /api/rooms/:id/state',
             deleteRoom: 'DELETE /api/rooms/:id',
+            inventories: 'GET /api/inventories',
+            inventoryById: 'GET /api/inventories/:id',
+            inventoryByRoom: 'GET /api/inventories/rooms/:roomId',
+            createInventory: 'POST /api/inventories',
+            updateInventory: 'PUT /api/inventories/:id',
+            deleteInventory: 'DELETE /api/inventories/:id',
         },
     });
 });
