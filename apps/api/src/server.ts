@@ -7,6 +7,7 @@ import { connectDatabase, disconnectDatabase, prisma } from './config/database';
 import { logger } from './utils/logger';
 import { errorHandler } from './middleware/error.middleware';
 import campusRoutes from './routes/campus.routes';
+import roomRoutes from './routes/room.routes';
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 app.use('/api/campus', campusRoutes);
+app.use('/api/rooms', roomRoutes);
 
 app.get('/health', async (_req: Request, res: Response) => {
     const uptime = Math.floor((Date.now() - startTime) / 1000);
@@ -60,6 +62,11 @@ app.get('/api', (_req: Request, res: Response) => {
             createCampus: 'POST /api/campus',
             updateCampus: 'PUT /api/campus/:id',
             deleteCampus: 'DELETE /api/campus/:id',
+            rooms: 'GET /api/rooms',
+            createRoom: 'POST /api/rooms',
+            updateRoom: 'PUT /api/rooms/:id',
+            updateRoomState: 'PATCH /api/rooms/:id/state',
+            deleteRoom: 'DELETE /api/rooms/:id',
         },
     });
 });
