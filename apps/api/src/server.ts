@@ -9,6 +9,7 @@ import { errorHandler } from './middleware/error.middleware';
 import campusRoutes from './routes/campus.routes';
 import roomRoutes from './routes/room.routes';
 import inventoryRoutes from './routes/inventory.routes';
+import reservationRoutes from './routes/reservation.routes';
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/api/campus', campusRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/inventories', inventoryRoutes);
+app.use('/api/reservations', reservationRoutes);
 
 app.get('/health', async (_req: Request, res: Response) => {
     const uptime = Math.floor((Date.now() - startTime) / 1000);
@@ -75,6 +77,13 @@ app.get('/api', (_req: Request, res: Response) => {
             createInventory: 'POST /api/inventories',
             updateInventory: 'PUT /api/inventories/:id',
             deleteInventory: 'DELETE /api/inventories/:id',
+            reservations: 'GET /api/reservations',
+            myReservations: 'GET /api/reservations/me',
+            roomReservations: 'GET /api/reservations/rooms/:roomId',
+            reservationById: 'GET /api/reservations/:id',
+            createReservation: 'POST /api/reservations',
+            updateReservation: 'PUT /api/reservations/:id',
+            deleteReservation: 'DELETE /api/reservations/:id',
         },
     });
 });
