@@ -1,13 +1,12 @@
 import express, { Request, Response } from 'express';
-import helmet from 'helmet';
 import cors from 'cors';
-import rateLimit from 'express-rate-limit';
 import pinoHttp from 'pino-http';
 import { env } from './config/env';
 import { corsConfig } from './config/cors';
 import { connectDatabase, disconnectDatabase, prisma } from './config/database';
 import { logger } from './utils/logger';
 import { errorHandler } from './middleware/error.middleware';
+import campusRoutes from './routes/campus.routes';
 
 const app = express();
 
@@ -17,6 +16,8 @@ app.use(cors(corsConfig));
 app.use(pinoHttp({ logger }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+app.use('/api/campus', campusRoutes);
 
 app.get('/health', async (_req: Request, res: Response) => {
     const uptime = Math.floor((Date.now() - startTime) / 1000);
@@ -55,6 +56,10 @@ app.get('/api', (_req: Request, res: Response) => {
         endpoints: {
             health: 'GET /health',
             info: 'GET /api',
+            campuses: 'GET /api/campus',
+            createCampus: 'POST /api/campus',
+            updateCampus: 'PUT /api/campus/:id',
+            deleteCampus: 'DELETE /api/campus/:id',
         },
     });
 });
