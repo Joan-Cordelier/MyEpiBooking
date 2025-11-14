@@ -4,7 +4,7 @@ import * as reservationController from '../controllers/reservation.controller';
 import { authenticate } from '../middleware/auth.middleware';
 import { requireRights } from '../middleware/rights.middleware';
 import { validate } from '../middleware/validate.middleware';
-import { UserRight } from '@prisma/client';
+import { UserRight, ReservationType } from '@prisma/client';
 import * as reservationService from '../services/reservation.service';
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../middleware/error.middleware';
@@ -12,8 +12,9 @@ import { AppError } from '../middleware/error.middleware';
 const router = Router();
 
 // Zod schemas
+// Use prisma enum for validation to stay in sync with schema.prisma
 const createReservationSchema = z.object({
-    type: z.enum(['MEETING', 'WORKSHOP', 'LECTURE', 'EXAM', 'OTHER']),
+    type: z.nativeEnum(ReservationType),
     title: z.string().min(1, 'Title is required'),
     description: z.string().optional(),
     startDate: z.string().datetime(),
@@ -22,7 +23,7 @@ const createReservationSchema = z.object({
 });
 
 const updateReservationSchema = z.object({
-    type: z.enum(['MEETING', 'WORKSHOP', 'LECTURE', 'EXAM', 'OTHER']).optional(),
+    type: z.nativeEnum(ReservationType).optional(),
     title: z.string().min(1).optional(),
     description: z.string().optional(),
     startDate: z.string().datetime().optional(),

@@ -2,6 +2,7 @@ import { prisma } from '../config/database';
 import bcrypt from 'bcryptjs';
 import { generateToken } from '../utils/jwt';
 import { UserRight } from '@prisma/client';
+import { AppError } from '../middleware/error.middleware';
 
 // User select without password
 const userSelect = {
@@ -91,15 +92,13 @@ export async function login(email: string, password: string) {
                 }
             }
         });
-        if (!user) {
-            throw new Error('Invalid email or password');
-        }
+        if (!user)
+            throw new AppError(401, 'Invalid email or password');
 
         // Verify password
         const isValidPassword = await verifyPassword(password, user.password);
-        if (!isValidPassword) {
-            throw new Error('Invalid email or password');
-        }
+        if (!isValidPassword)
+            throw new AppError(401, 'Invalid email or password');
         const token = generateToken(user.id, user.email);
         const { password: _, ...userWithoutPassword } = user;
         const userData = {
