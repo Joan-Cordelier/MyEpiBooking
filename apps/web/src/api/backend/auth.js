@@ -11,7 +11,7 @@ class Auth extends API {
 
     /* Login Function */
     async login(email, password) {
-        return this.request('/auth/login', {
+        return this.request('/api/auth/login', {
             method: 'POST',
             body: JSON.stringify({email, password})
         });

@@ -5,7 +5,7 @@
 ** Backend API Link
 */
 
-const API_URL = import.meta.env?.BACKEND_URL ?? "";
+const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "";
 
 function build_url(path) {
     if (!API_URL)

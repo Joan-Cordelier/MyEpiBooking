@@ -10,6 +10,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Anton, Istok_Web } from "next/font/google";
+import { logout as doLogout } from "../../lib/handleUser";
 
 const anton = Anton({ subsets: ["latin"], weight: "400" });
 const istok = Istok_Web({ subsets: ["latin"], weight: ["400", "700"] });
@@ -17,6 +18,7 @@ const istok = Istok_Web({ subsets: ["latin"], weight: ["400", "700"] });
 export default function Navbar() {
     const pathname = usePathname();
     const isActive = (href: string) => href !== "#" && (href === "/" ? pathname === "/" : pathname.startsWith(href));
+
 	return (
 		<nav
 			aria-label="Navigation latérale"
@@ -83,7 +85,7 @@ export default function Navbar() {
 			<button
 				type="button"
 				className="group relative w-32 h-8 inline-flex items-center gap-3"
-				onClick={() => console.log("logout clicked")}
+				onClick={doLogout}
 				aria-label="Se déconnecter"
 			>
 				<div className="pointer-events-none absolute left-[-11px] top-[-3px] w-48 h-9 bg-[#0032D7]/50 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity" aria-hidden="true"></div>

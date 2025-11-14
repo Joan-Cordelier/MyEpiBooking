@@ -8,10 +8,10 @@
 "use client";
 
 import { Anton } from "next/font/google";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import AdminLogin from "@/components/ui/AdminLogin";
 
-import { handleMicrosoftLogin, handleLogin } from "./login"
+import * as Auth from "@/api/backend/auth" 
 
 const anton = Anton({ subsets: ["latin"], weight: "400" });
 
@@ -26,6 +26,29 @@ export default function Login({
 	topLogoSrc = "https://placehold.co/328x81",
 	titleImageSrc = "https://placehold.co/431x100",
 }: LoginProps) {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
+    async function onAdminSubmit(email: string, password: string) {
+        const from = searchParams?.get('from') || '/';
+
+        try {
+            const data = await Auth.login(email, password);
+
+            if (data?.token) {
+                localStorage.setItem('token', data.token);
+                if (data.user)
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                localStorage.removeItem('jwtToken');
+                router.push(from);
+                return;
+            }
+            throw new Error('No token returned');
+        } catch (e) {
+            throw e;
+        }
+    }
+
     return (
         <section className="w-full min-h-[80vh] bg-white overflow-hidden flex items-center justify-center">
             <div className="w-[891px] h-[587px] rounded-xl border border-black/50 bg-transparent flex">
@@ -46,7 +69,9 @@ export default function Login({
 
                     <button
                         type="button"
-                        onClick={handleMicrosoftLogin}
+                        onClick={() => {
+                            window.location.href = '/';
+                        }}
                         className={`mt-8 w-[556px] h-7 bg-blue-700 text-white flex items-center justify-center hover:brightness-95 transition-all ${anton.className}`}
                         aria-label="Se connecter avec un compte Epitech"
                     >
@@ -59,7 +84,7 @@ export default function Login({
 
                     <AdminLogin
                         className={`mt-4 w-[556px] h-7`}
-                        onSubmit={handleLogin}
+                        onSubmit={onAdminSubmit}
                     />
                 </div>
             </div>

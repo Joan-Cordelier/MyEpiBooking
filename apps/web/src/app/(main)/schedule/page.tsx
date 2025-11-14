@@ -8,7 +8,7 @@
 "use client";
 
 import styles from "../../page.module.css";
-import BookingCalendarSection from "@/components/sections/calendar/Calendar";
+import BookingCalendarSection from "@/components/sections/Calendar";
 
 export default function Schedule() {
   return (
