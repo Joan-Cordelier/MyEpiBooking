@@ -9,10 +9,12 @@
 import { addWeeks, startOfWeek, format, addDays } from "date-fns";
 import { formatDuration } from "@/lib/formatDuration";
 import { fr } from "date-fns/locale";
-import { Calendar, dateFnsLocalizer, Views, SlotInfo } from "react-big-calendar";
-import { useMemo, useState, useCallback } from "react";
+import { Calendar, dateFnsLocalizer, Views } from "react-big-calendar";
+import { useMemo, useState, useCallback, useEffect } from "react";
 import RoomSelector from "@/components/ui/RoomSelector";
 import ReserveButton from "@/components/ui/ReserveButton";
+import { Room, handleRoom } from "@/lib/handleRooms";
+import { Booking, handleMyBookings, createBooking, ReservationType } from "@/lib/handleBookings";
 
 const locales = { fr } as const;
 const localizer = dateFnsLocalizer({
@@ -22,30 +24,37 @@ const localizer = dateFnsLocalizer({
     getDay: (date: Date) => date.getDay(),
     locales,
 });
-export type Room = {
-    name: string;
-    state: boolean;
-};
-export type CalendarEvent = {
-    title: string;
-    type: string;
-    author: string;
-    start: Date;
-    end: Date;
-    room?: Room;
-    allDay?: boolean;
-};
 
+// Include legacy / fallback types to avoid bland styling for older data (EXAM, LECTURE, OTHER)
 const TYPE_COLORS: Record<string, { bg: string; border: string }> = {
-    "Kick-off": { bg: "#87bcfcff", border: "#3B82F6" },
-    "Follow-up": { bg: "#fddb54ff", border: "#F59E0B" },
-    "Meeting": { bg: "#85ffb0ff", border: "#22C55E" },
-    "Bootstrap": { bg: "#9c86fcff", border: "#8B5CF6" },
-    "Exams": { bg: "#ff7c7cff", border: "#EF4444" },
-    "Workgroup": { bg: "#0284C7", border: "#375bffff" },
+    MEETING: { bg: "#85ffb0ff", border: "#22C55E" },
+    WORK: { bg: "#0284C7", border: "#375bffff" },
+    KICK_OFF: { bg: "#87bcfcff", border: "#3B82F6" },
+    BOOTHING: { bg: "#9c86fcff", border: "#8B5CF6" },
+    WORKSHOP: { bg: "#fddb54ff", border: "#F59E0B" },
+    TALK: { bg: "#9DD6F9", border: "#0EA5E9" },
+    UNEXPECTED: { bg: "#ff7c7cff", border: "#EF4444" },
+    LECTURE: { bg: "#c4b5fd", border: "#7C3AED" },
+    EXAM: { bg: "#fecaca", border: "#DC2626" },
+    OTHER: { bg: "#e5e7eb", border: "#9CA3AF" },
 };
 
-function eventStyleGetter(event: CalendarEvent) {
+function eventStyleGetter(event: any) {
+    // Ghost (preview) event styling
+    if (event.isGhost) {
+        const baseColor = event.isConflict ? 'rgba(239,68,68,0.35)' : 'rgba(107,114,128,0.35)';
+        const borderColor = event.isConflict ? '#EF4444' : '#6B7280';
+        return {
+            style: {
+                backgroundColor: baseColor,
+                borderColor,
+                color: '#111827',
+                borderWidth: 2,
+                borderStyle: 'dashed',
+                opacity: 0.85,
+            }
+        };
+    }
     const colors = TYPE_COLORS[event.type] ?? { bg: "#E5E7EB", border: "#D1D5DB" };
     return {
         style: {
@@ -58,10 +67,17 @@ function eventStyleGetter(event: CalendarEvent) {
     };
 }
 
-function EventRenderer({ event }: { event: CalendarEvent }) {
+function EventRenderer({ event }: { event: any }) {
     return (
         <div className="flex h-full flex-col leading-tight">
-            <div className="font-semibold truncate">{event.title}</div>
+            <div className="font-semibold truncate flex items-center gap-1">
+                <span>{event.title}</span>
+                {event.isGhost && (
+                    <span className={"text-[10px] font-medium uppercase tracking-wide rounded px-1 py-[1px] " + (event.isConflict ? 'bg-red-100 text-red-600' : 'bg-neutral-200 text-neutral-600')}>
+                        Prévisualisation{event.isConflict ? ' (Conflit)' : ''}
+                    </span>
+                )}
+            </div>
             <div className="mt-auto flex w-full items-end justify-between text-[11px]">
                 <div className="truncate">{formatDuration(event.start, event.end)}</div>
                 <div className="flex min-w-0 flex-col items-end text-right">
@@ -76,66 +92,91 @@ function EventRenderer({ event }: { event: CalendarEvent }) {
 export default function BookingCalendarSection() {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [view, setView] = useState<typeof Views[keyof typeof Views]>(Views.WEEK);
-    const [room, setRoom] = useState<string>('601');
-    const rooms: Room[] = [{name: '601', state: false}, {name: '602', state: true}, {name: '801', state: false}];
+    const [room, setRoom] = useState<string>();
+    const [rooms, setRooms] = useState<Room[]>([]);
+    const [bookings, setBookings] = useState<Booking[]>([]);
+    // Form-driven slot selection (remove click selection)
+    const [startDate, setStartDate] = useState("");
+    const [startTime, setStartTime] = useState("");
+    const [endDate, setEndDate] = useState("");
+    const [endTime, setEndTime] = useState("");
+    const [showForm, setShowForm] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
+    const [formValues, setFormValues] = useState<{ title: string; type: ReservationType; description: string }>({
+        title: "",
+        type: "MEETING",
+        description: ""
+    });
+
+    useEffect(() => {
+        let mounted = true;
+        (async () => {
+            try {
+                const data = await handleRoom();
+                if (mounted)
+                    setRooms(Array.isArray(data) ? data : []);
+            } catch {
+                if (mounted)
+                    setRooms([]);
+            }
+        })();
+        return () => { mounted = false; };
+    }, []);
+
     const selectedRoom = useMemo(() => rooms.find(r => r.name === room), [rooms, room]);
 
-        const allEvents = useMemo<CalendarEvent[]>(() => {
-            return [
-                {
-                    title: "Kick-off my_printf", // Mercredi 22/10/2025 09:00–10:00 [601]
-                    type: 'Kick-off',
-                    author: 'Sebastien Goby',
-                    start: new Date(2025, 9, 22, 9, 0),
-                    end: new Date(2025, 9, 22, 10, 0),
-                    room: rooms.find(r => r.name === '601')
-                },
-                {
-                    title: "Bootstrap my_printf",
-                    type: 'Bootstrap',
-                    author: 'Sebastien Goby',
-                    start: new Date(2025, 9, 22, 10, 0), // Mercredi 22/10/2025 10:00–12:00 [601]
-                    end: new Date(2025, 9, 22, 12, 0),
-                    room: rooms.find(r => r.name === '601')
-                },
-                {
-                    title: "Kick-off Final Stumper",
-                    type: 'Kick-off',
-                    author: 'Sebastien Goby',
-                    start: new Date(2025, 9, 25, 9, 0),
-                    end: new Date(2025, 9, 25, 10, 0),
-                    room: rooms.find(r => r.name === '601')
-                },
-                {
-                    title: "Final Stumper",
-                    type: 'Exams',
-                    author: 'Sebastien Goby',
-                    start: new Date(2025, 9, 25, 10, 0),
-                    end: new Date(2025, 9, 25, 18, 0),
-                    room: rooms.find(r => r.name === '601')
-                },
-                {
-                    title: "Meeting R-Type",
-                    type: 'Meeting',
-                    author: 'Mike Mathieu',
-                    start: new Date(2025, 9, 22, 10, 0),
-                    end: new Date(2025, 9, 22, 11, 0),
-                    room: rooms.find(r => r.name === '602')
-                },
-                {
-                    title: "R-Type",
-                    type: 'Workgroup',
-                    author: 'Mike Mathieu',
-                    start: new Date(2025, 9, 22, 11, 0),
-                    end: new Date(2025, 9, 22, 13, 0),
-                    room: rooms.find(r => r.name === '602')
-                }
-            ];
-        }, []);
+    useEffect(() => {
+        let mounted = true;
+        (async () => {
+            try {
+                const data = await handleMyBookings();
+                if (mounted)
+                    setBookings(Array.isArray(data) ? data : []);
+            } catch {
+                if (mounted)
+                    setBookings([]);
+            }
+        })();
+        return () => { mounted = false; };
+    }, []);
 
-        const events = useMemo<CalendarEvent[]>(() => {
-            return allEvents.filter((e) => !room || (e.room && e.room.name === room));
-        }, [allEvents, room]);
+    // (moved below provisionalSlot & conflict logic for ordering)
+
+    const provisionalSlot = useMemo(() => {
+        if (!startDate || !startTime || !endDate || !endTime) return null;
+        try {
+            const start = new Date(`${startDate}T${startTime}:00`);
+            const end = new Date(`${endDate}T${endTime}:00`);
+            if (isNaN(start.getTime()) || isNaN(end.getTime())) return null;
+            return { start, end };
+        } catch { return null; }
+    }, [startDate, startTime, endDate, endTime]);
+
+    const hasConflict = useMemo(() => {
+        if (!provisionalSlot || !room) return false;
+        return bookings.some(b => b.room.name === room && provisionalSlot.start < b.end && provisionalSlot.end > b.start);
+    }, [bookings, provisionalSlot, room]);
+
+    // Events + ghost preview if form has valid provisional slot
+    const events = useMemo<any[]>(() => {
+        const filtered: any[] = bookings.filter((e) => !room || room === 'Toutes' || (e.room && e.room.name === room));
+        if (provisionalSlot && selectedRoom && selectedRoom.state && showForm) {
+            filtered.push({
+                // optional id for react-big-calendar internal keying (not part of Booking type)
+                id: 'ghost-' + (selectedRoom.id || selectedRoom.name),
+                title: formValues.title || '(Prévisualisation)',
+                type: formValues.type,
+                author: 'Vous',
+                start: provisionalSlot.start,
+                end: provisionalSlot.end,
+                room: selectedRoom,
+                isGhost: true,
+                isConflict: hasConflict,
+            });
+        }
+        return filtered;
+    }, [bookings, room, provisionalSlot, selectedRoom, showForm, formValues.title, formValues.type, hasConflict]);
 
     const navLabel = useMemo(() => {
         if (view === Views.DAY) {
@@ -153,9 +194,80 @@ export default function BookingCalendarSection() {
         setCurrentDate((d) => (view === Views.DAY ? addDays(d, 1) : addWeeks(d, 1)));
     }, [view]);
     const onToday = useCallback(() => setCurrentDate(new Date()), []);
-    const handleSelectSlot = useCallback((slot: SlotInfo) => {
-        console.log("Select slot:", slot.start, slot.end);
+    // Removed calendar slot selection
+
+    useEffect(() => {
+        if (!room && rooms.length > 0) {
+            const first = rooms.find(r => r.state);
+            if (first) setRoom(first.name);
+        }
+    }, [rooms, room]);
+
+    useEffect(() => {
+        if (bookings.length === 0)
+            return;
+        const now = new Date();
+        const upcoming = bookings.find(b => b.end > now) || bookings[bookings.length - 1];
+        if (!upcoming)
+            return;
+        const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
+        const weekEnd = addDays(weekStart, 6);
+        if (upcoming.start < weekStart || upcoming.start > weekEnd) {
+            setCurrentDate(upcoming.start);
+        }
+    }, [bookings]);
+
+    const onReserveClick = useCallback(() => {
+        if (!selectedRoom || !selectedRoom.state) return;
+        setShowForm(v => !v);
+        setErrorMsg(null);
+    }, [selectedRoom]);
+
+    const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setFormValues(v => ({ ...v, [name]: value }));
     }, []);
+
+    const handleSubmit = useCallback(async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedRoom || !selectedRoom.state) {
+            setErrorMsg("Salle non réservable ou non sélectionnée.");
+            return;
+        }
+        if (!provisionalSlot) {
+            setErrorMsg("Renseignez dates & heures.");
+            return;
+        }
+        if (provisionalSlot.end <= provisionalSlot.start) {
+            setErrorMsg("Fin doit être après début.");
+            return;
+        }
+        if (hasConflict) { setErrorMsg("Ce créneau est déjà pris pour cette salle."); return; }
+        setSubmitting(true);
+        setErrorMsg(null);
+        try {
+            const booking = await createBooking({
+                type: formValues.type,
+                title: formValues.title || 'Sans titre',
+                description: formValues.description || '',
+                startDate: provisionalSlot.start,
+                endDate: provisionalSlot.end,
+                roomId: selectedRoom.id,
+            });
+            if (!booking) {
+                setErrorMsg("Échec de la création de la réservation.");
+            } else {
+                setBookings(prev => [...prev, booking]);
+                setShowForm(false);
+                setStartDate(""); setStartTime(""); setEndDate(""); setEndTime("");
+                setFormValues({ title: "", type: "MEETING", description: "" });
+            }
+        } catch (err: any) {
+            setErrorMsg("Erreur: " + (err?.message || 'inconnue'));
+        } finally {
+            setSubmitting(false);
+        }
+    }, [provisionalSlot, selectedRoom, formValues, hasConflict]);
 
     return (
         <section className="w-full">
@@ -208,10 +320,77 @@ export default function BookingCalendarSection() {
                             Semaine
                         </button>
                     </div>
-                    <RoomSelector rooms={rooms.map(r => r.name)} value={room} onChange={setRoom} />
-                    <ReserveButton disabled={!selectedRoom?.state} />
+                    <RoomSelector rooms={["Toutes", ...rooms.map(r => r.name)]} value={room} onChange={setRoom} />
+                    <ReserveButton disabled={!selectedRoom?.state} onClick={onReserveClick} />
                 </div>
             </div>
+            {provisionalSlot && (
+                <div className="mb-4 rounded-md border border-neutral-200 bg-neutral-50 p-3 text-xs text-neutral-700">
+                    Aperçu: {format(provisionalSlot.start, 'dd/MM HH:mm')} – {format(provisionalSlot.end, 'dd/MM HH:mm')} {hasConflict && <span className="ml-2 font-semibold text-red-600">(Conflit)</span>}
+                </div>
+            )}
+            {showForm && selectedRoom && selectedRoom.state && (
+                <form onSubmit={handleSubmit} className="mb-4 space-y-3 rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
+                    <div className="flex flex-wrap gap-4">
+                        <div className="flex-1 min-w-[220px]">
+                            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide">Titre</label>
+                            <input name="title" value={formValues.title} onChange={handleChange} placeholder="Titre" className="w-full rounded border border-neutral-300 px-2 py-1 text-sm text-black placeholder:text-neutral-400" required />
+                        </div>
+                        <div className="w-40">
+                            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide">Type</label>
+                            <select name="type" value={formValues.type} onChange={handleChange} className="w-full rounded border border-neutral-300 px-2 py-1 text-sm text-black">
+                                <option value="MEETING">Meeting</option>
+                                <option value="WORK">Work</option>
+                                <option value="KICK_OFF">Kick Off</option>
+                                <option value="BOOTHING">Boothing</option>
+                                <option value="WORKSHOP">Workshop</option>
+                                <option value="TALK">Talk</option>
+                                <option value="UNEXPECTED">Unexpected</option>
+                            </select>
+                        </div>
+                        <div className="flex-1 min-w-[220px]">
+                            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide">Salle</label>
+                            <input value={selectedRoom.name} disabled className="w-full rounded border border-neutral-300 bg-neutral-100 px-2 py-1 text-sm text-black" />
+                        </div>
+                    </div>
+                    <div>
+                        <label className="mb-1 block text-xs font-semibold uppercase tracking-wide">Description</label>
+                        <textarea name="description" value={formValues.description} onChange={handleChange} placeholder="Description" className="w-full rounded border border-neutral-300 px-2 py-1 text-sm h-20 resize-none text-black placeholder:text-neutral-400" />
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-2">
+                        <div>
+                            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide">Début - Date</label>
+                            <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full rounded border border-neutral-300 px-2 py-1 text-sm text-black" />
+                        </div>
+                        <div>
+                            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide">Début - Heure</label>
+                            <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} className="w-full rounded border border-neutral-300 px-2 py-1 text-sm text-black" />
+                        </div>
+                        <div>
+                            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide">Fin - Date</label>
+                            <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full rounded border border-neutral-300 px-2 py-1 text-sm text-black" />
+                        </div>
+                        <div>
+                            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide">Fin - Heure</label>
+                            <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} className="w-full rounded border border-neutral-300 px-2 py-1 text-sm text-black" />
+                        </div>
+                    </div>
+                    <div className="text-xs text-neutral-600">
+                        {provisionalSlot ? (
+                            <>Début: {format(provisionalSlot.start, 'dd/MM HH:mm')} · Fin: {format(provisionalSlot.end, 'dd/MM HH:mm')}</>
+                        ) : <span className="text-red-600">Renseignez dates & heures.</span>}
+                    </div>
+                    {errorMsg && <div className="text-sm font-medium text-red-600">{errorMsg}</div>}
+                    <div className="flex gap-2">
+                        <button type="submit" disabled={submitting || hasConflict || !provisionalSlot} className="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50">
+                            {submitting ? 'Création...' : 'Confirmer la réservation'}
+                        </button>
+                        <button type="button" onClick={() => { setShowForm(false); }} className="rounded-md bg-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-800 hover:bg-neutral-300">
+                            Annuler
+                        </button>
+                    </div>
+                </form>
+            )}
                     <div className="rbc-epi rounded-2xl border border-black/20 bg-white p-3 md:p-4">
                 <Calendar
                     localizer={localizer}
@@ -228,10 +407,9 @@ export default function BookingCalendarSection() {
                     min={new Date(1970, 0, 1, 8, 0)}
                     max={new Date(1970, 0, 1, 20, 0)}
                     culture="fr"
-                    selectable
-                    onSelectSlot={handleSelectSlot}
+                    selectable={false}
                     components={{ toolbar: () => null, event: EventRenderer }}
-                    eventPropGetter={(e) => eventStyleGetter(e as CalendarEvent)}
+                    eventPropGetter={(e) => eventStyleGetter(e as Booking)}
                                 style={{ height: 900 }}
                 />
             </div>

@@ -24,7 +24,7 @@ export default function RoomSelector({ rooms, value, onChange, className = "" }:
             >
                 {rooms.map((room) => (
                     <option key={room} value={room}>
-                        Salle {room}
+                        {room}
                     </option>
                 ))}
             </select>
