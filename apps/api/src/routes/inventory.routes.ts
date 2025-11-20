@@ -14,7 +14,7 @@ const createInventoryBodySchema = z.object({
     hasBoard: z.boolean(),
     hasTV: z.boolean(),
     roomId: z.string().cuid('Invalid room ID'),
-    notes: z.string().trim().max(500).optional().nullable(),
+    notes: z.string().max(500).optional().nullable(),
 });
 
 const updateInventoryBodySchema = z.object({
@@ -22,7 +22,7 @@ const updateInventoryBodySchema = z.object({
     chairs: z.number().int().min(0).max(500).optional(),
     hasBoard: z.boolean().optional(),
     hasTV: z.boolean().optional(),
-    notes: z.string().trim().max(500).optional().nullable(),
+    notes: z.string().max(500).optional().nullable(),
 });
 
 const inventoryIdParamsSchema = z.object({

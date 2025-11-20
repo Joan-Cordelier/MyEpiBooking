@@ -11,8 +11,8 @@ export const getAll = asyncHandler(async (req: Request, res: Response) => {
         type: req.query.type as string | undefined,
     };
 
-    const result = await reservationService.getAll(filters);
-    res.status(200).json(result);
+    const reservations = await reservationService.getAll(filters);
+    res.status(200).json(reservations);
 });
 
 export const getById = asyncHandler(async (req: Request, res: Response) => {
@@ -21,7 +21,7 @@ export const getById = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const getMyReservations = asyncHandler(async (req: Request, res: Response) => {
-    const userId = req.user!.id;
+    const userId = (req as any).user.id; // From auth middleware
     const reservations = await reservationService.getByUserId(userId);
     res.status(200).json(reservations);
 });
@@ -42,7 +42,7 @@ export const getRoomReservations = asyncHandler(async (req: Request, res: Respon
 });
 
 export const create = asyncHandler(async (req: Request, res: Response) => {
-    const userId = req.user!.id;
+    const userId = (req as any).user.id; // From auth middleware
 
     const reservation = await reservationService.create({
         ...req.body,

@@ -2,7 +2,7 @@
 ** EPITECH PROJECT, 2025
 ** EPI BOOKING
 ** File description:
-** Login page
+** Login route (no header/navbar)
 */
 
 "use client";

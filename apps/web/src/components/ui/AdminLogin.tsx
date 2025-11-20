@@ -94,7 +94,7 @@ export default function AdminLogin({ className = "", onSubmit }: AdminLoginProps
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full h-10 rounded-md border border-black/30 px-3 outline-none focus:border-blue-700"
+                  className="w-full h-10 rounded-md border border-black/30 px-3 outline-none focus:border-blue-700 text-black placeholder-black/40"
                   placeholder="admin@example.com"
                 />
               </div>
@@ -107,7 +107,7 @@ export default function AdminLogin({ className = "", onSubmit }: AdminLoginProps
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full h-10 rounded-md border border-black/30 px-3 outline-none focus:border-blue-700"
+                  className="w-full h-10 rounded-md border border-black/30 px-3 outline-none focus:border-blue-700 text-black placeholder-black/40"
                   placeholder="••••••••"
                 />
               </div>

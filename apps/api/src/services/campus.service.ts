@@ -1,6 +1,5 @@
 import { prisma } from '../config/database';
 import { Prisma } from '@prisma/client';
-import { AppError } from '../middleware/error.middleware';
 
 
 export interface CampusFilters {
@@ -9,38 +8,46 @@ export interface CampusFilters {
 }
 
 export async function getAll(filters?: CampusFilters) {
-    const where: Prisma.CampusWhereInput = {};
+    try {
+        const where: Prisma.CampusWhereInput = {};
 
-    if (filters?.city) {
-        where.city = {
-            contains: filters.city,
-        };
+        if (filters?.city) {
+            where.city = {
+                contains: filters.city,
+            };
+        }
+
+        if (filters?.name) {
+            where.name = {
+                contains: filters.name,
+            };
+        }
+
+        const campuses = await prisma.campus.findMany({
+            where,
+            orderBy: { name: 'asc' },
+        });
+
+        return campuses;
+    } catch (error) {
+        throw error;
     }
-
-    if (filters?.name) {
-        where.name = {
-            contains: filters.name,
-        };
-    }
-
-    const campuses = await prisma.campus.findMany({
-        where,
-        orderBy: { name: 'asc' },
-    });
-
-    return campuses;
 }
 
 export async function getById(id: string) {
-    const campus = await prisma.campus.findUnique({
-        where: { id },
-    });
+    try {
+        const campus = await prisma.campus.findUnique({
+            where: { id },
+        });
 
-    if (!campus) {
-        throw new AppError(404, 'Campus not found');
+        if (!campus) {
+            throw new Error('Campus not found');
+        }
+
+        return campus;
+    } catch (error) {
+        throw error;
     }
-
-    return campus;
 }
 
 export async function create(
@@ -48,38 +55,52 @@ export async function create(
     city: string,
     address?: string | null
 ) {
-    const campusExist = await prisma.campus.findUnique({
-        where: { name },
-    });
+    try {
+        const campusExist = await prisma.campus.findUnique({
+            where: { name },
+        });
 
-    if (campusExist) {
-        throw new AppError(409, 'Campus with this name already exists');
-    }
+        if (campusExist) {
+            throw new Error('Campus with this name already exists');
+        }
 
-    const campus = await prisma.campus.create({
-        data: {
+        const data: any = {
             name,
             city,
             address: address ?? null,
-        }
-    });
+        };
 
-    return campus;
+        const campus = await prisma.campus.create({ data });
+
+        return campus;
+    } catch (error) {
+        throw error;
+    }
 }
 
 export async function update(id: string, updateFields: Prisma.CampusUpdateInput) {
-    const campus = await prisma.campus.update({
-        where: { id },
-        data: updateFields,
-    });
+    try {
+        const campus = await prisma.campus.update({
+            where: { id },
+            data: {
+                ...updateFields,
+            },
+        });
 
-    return campus;
+        return campus;
+    } catch (error) {
+        throw error;
+    }
 }
 
 export async function deleteCampus(id: string) {
-    const campus = await prisma.campus.delete({
-        where: { id },
-    });
+    try {
+        const campus = await prisma.campus.delete({
+            where: { id },
+        });
 
-    return campus;
+        return campus;
+    } catch (error) {
+        throw error;
+    }
 }

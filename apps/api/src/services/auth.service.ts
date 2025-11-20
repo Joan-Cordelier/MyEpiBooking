@@ -30,88 +30,88 @@ export async function register(data: {
     firstName?: string;
     campusId?: string;
 }) {
-    const existingUser = await prisma.user.findUnique({
-        where: { email: data.email }
-    });
-    
-    if (existingUser) {
-        throw new AppError(409, 'User with this email already exists');
-    }
-    
-    if (data.campusId) {
-        const campus = await prisma.campus.findUnique({
-            where: { id: data.campusId }
+    try {
+        const existingUser = await prisma.user.findUnique({
+            where: { email: data.email }
+        });
+        if (existingUser) {
+            throw new Error('User with this email already exists');
+        }
+        if (data.campusId) {
+            const campus = await prisma.campus.findUnique({
+                where: { id: data.campusId }
+            });
+
+            if (!campus) {
+                throw new Error('Campus not found');
+            }
+        }
+
+        // Hash password
+        const hashedPassword = await hashPassword(data.password);
+        const user = await prisma.user.create({
+            data: {
+                email: data.email,
+                password: hashedPassword,
+                name: data.name,
+                firstName: data.firstName,
+                campusId: data.campusId,
+                rights: {
+                    create: {
+                        right: UserRight.BOOK_ROOM
+                    }
+                }
+            },
+            select: userSelect,
         });
 
-        if (!campus) {
-            throw new AppError(404, 'Campus not found');
-        }
+        const token = generateToken(user.id, user.email);
+        const userData = {
+            ...user,
+            rights: user.rights.map(r => r.right),
+        };
+        return {
+            user: userData,
+            token
+        };
+    } catch (error) {
+        throw error;
     }
-
-    const hashedPassword = await hashPassword(data.password);
-
-    const user = await prisma.user.create({
-        data: {
-            email: data.email,
-            password: hashedPassword,
-            name: data.name,
-            firstName: data.firstName,
-            campusId: data.campusId,
-            rights: {
-                create: {
-                    right: UserRight.BOOK_ROOM
-                }
-            }
-        },
-        select: userSelect,
-    });
-
-    const token = generateToken(user.id, user.email);
-    const userData = {
-        ...user,
-        rights: user.rights.map(r => r.right),
-    };
-
-    return {
-        user: userData,
-        token
-    };
 }
 
 export async function login(email: string, password: string) {
-    const user = await prisma.user.findUnique({
-        where: { email },
-        include: {
-            campus: true,
-            rights: {
-                select: {
-                    right: true,
+    try {
+        const user = await prisma.user.findUnique({
+            where: { email },
+            include: {
+                campus: true,
+                rights: {
+                    select: {
+                        right: true,
+                    }
                 }
             }
-        }
-    });
+        });
+        if (!user)
+            throw new AppError(401, 'Invalid email or password');
 
-    if (!user) {
-        throw new AppError(401, 'Invalid email or password');
+        // Verify password
+        const isValidPassword = await verifyPassword(password, user.password);
+        if (!isValidPassword)
+            throw new AppError(401, 'Invalid email or password');
+        const token = generateToken(user.id, user.email);
+        const { password: _, ...userWithoutPassword } = user;
+        const userData = {
+            ...userWithoutPassword,
+            rights: user.rights.map(r => r.right),
+        };
+        return {
+            user: userData,
+            token
+        };
+    } catch (error) {
+        throw error;
     }
-
-    const isValidPassword = await verifyPassword(password, user.password);
-
-    if (!isValidPassword) {
-        throw new AppError(401, 'Invalid email or password');
-    }
-    
-    const token = generateToken(user.id, user.email);
-    const { password: _, ...userWithoutPassword } = user;
-    const userData = {
-        ...userWithoutPassword,
-        rights: user.rights.map(r => r.right),
-    };
-    
-    return {
-        user: userData,
-        token
-    };
 }
 
 export async function hashPassword(password: string): Promise<string> {
@@ -123,17 +123,20 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
 }
 
 export async function getMe(userId: string) {
-    const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: userSelect,
-    });
+    try {
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: userSelect,
+        });
 
-    if (!user) {
-        throw new AppError(404, 'User not found');
+        if (!user) {
+            throw new Error('User not found');
+        }
+        return {
+            ...user,
+            rights: user.rights.map(r => r.right),
+        };
+    } catch (error) {
+        throw error;
     }
-
-    return {
-        ...user,
-        rights: user.rights.map(r => r.right),
-    };
 }

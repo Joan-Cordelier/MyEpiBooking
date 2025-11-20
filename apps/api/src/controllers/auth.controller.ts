@@ -25,11 +25,9 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const me = asyncHandler(async (req: Request, res: Response) => {
-    if (!req.user) {
+    if (!req.user)
         throw new AppError(401, 'User not authenticated');
-    }
 
     const user = await authService.getMe(req.user.id);
-
     res.status(200).json(user);
 });

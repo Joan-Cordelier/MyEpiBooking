@@ -8,9 +8,10 @@
 "use client";
 
 import { Anton } from "next/font/google";
-import { useRouter } from "next/navigation";
-import { FormEvent } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import AdminLogin from "@/components/ui/AdminLogin";
+
+import * as Auth from "@/api/backend/auth" 
 
 const anton = Anton({ subsets: ["latin"], weight: "400" });
 
@@ -22,19 +23,31 @@ type LoginProps = {
 };
 
 export default function Login({
-	onEpitechLogin,
-	onAdminLogin,
 	topLogoSrc = "https://placehold.co/328x81",
 	titleImageSrc = "https://placehold.co/431x100",
 }: LoginProps) {
-	const router = useRouter();
+    const router = useRouter();
+    const searchParams = useSearchParams();
 
-	function handleEpitechLogin() {
-		if (onEpitechLogin)
-            return onEpitechLogin();
-		console.log("Epitech login clicked");
-		router.push("/schedule"); //FAKE REDIRECTION
-	}
+    async function onAdminSubmit(email: string, password: string) {
+        const from = searchParams?.get('from') || '/';
+
+        try {
+            const data = await Auth.login(email, password);
+
+            if (data?.token) {
+                localStorage.setItem('token', data.token);
+                if (data.user)
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                localStorage.removeItem('jwtToken');
+                router.push(from);
+                return;
+            }
+            throw new Error('No token returned');
+        } catch (e) {
+            throw e;
+        }
+    }
 
     return (
         <section className="w-full min-h-[80vh] bg-white overflow-hidden flex items-center justify-center">
@@ -56,7 +69,9 @@ export default function Login({
 
                     <button
                         type="button"
-                        onClick={handleEpitechLogin}
+                        onClick={() => {
+                            window.location.href = '/';
+                        }}
                         className={`mt-8 w-[556px] h-7 bg-blue-700 text-white flex items-center justify-center hover:brightness-95 transition-all ${anton.className}`}
                         aria-label="Se connecter avec un compte Epitech"
                     >
@@ -69,7 +84,7 @@ export default function Login({
 
                     <AdminLogin
                         className={`mt-4 w-[556px] h-7`}
-                        onSubmit={onAdminLogin}
+                        onSubmit={onAdminSubmit}
                     />
                 </div>
             </div>

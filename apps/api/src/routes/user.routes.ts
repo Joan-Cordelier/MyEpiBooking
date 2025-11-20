@@ -2,30 +2,32 @@ import { Router } from 'express';
 import { z } from 'zod';
 import * as userController from '../controllers/user.controller';
 import { authenticate } from '../middleware/auth.middleware';
-import { requireRights, requireOwnershipOrRight } from '../middleware/rights.middleware';
+import { requireRights } from '../middleware/rights.middleware';
 import { validate } from '../middleware/validate.middleware';
 import { UserRight } from '@prisma/client';
+import { Request, Response, NextFunction } from 'express';
+import { AppError } from '../middleware/error.middleware';
 
 const router = Router();
 
 // Zod schemas
 const createUserSchema = z.object({
-    email: z.string().trim().email(),
+    email: z.string().email(),
     password: z.string().min(8),
-    name: z.string().trim().optional(),
-    firstName: z.string().trim().optional(),
-    actual_promotion: z.string().trim().optional(),
+    name: z.string().optional(),
+    firstName: z.string().optional(),
+    actual_promotion: z.string().optional(),
     photo: z.string().url().optional(),
     campusId: z.string().cuid().optional(),
     rights: z.array(z.nativeEnum(UserRight)).optional(),
 });
 
 const updateUserSchema = z.object({
-    email: z.string().trim().email().optional(),
+    email: z.string().email().optional(),
     password: z.string().min(8).optional(),
-    name: z.string().trim().optional(),
-    firstName: z.string().trim().optional(),
-    actual_promotion: z.string().trim().optional(),
+    name: z.string().optional(),
+    firstName: z.string().optional(),
+    actual_promotion: z.string().optional(),
     photo: z.string().url().optional(),
     campusId: z.string().cuid().optional().nullable(),
 });
@@ -38,11 +40,27 @@ const idParamSchema = z.object({
     id: z.string().cuid(),
 });
 
-// Middleware: user can access their own profile or have EDIT_RIGHTS
-const checkSelfOrAdmin = requireOwnershipOrRight(
-    (req) => req.params.id,
-    UserRight.EDIT_RIGHTS
-);
+// Middleware to check if user is accessing their own profile or is SUPER_ADMIN
+const checkSelfOrAdmin = (req: Request, _res: Response, next: NextFunction): void => {
+    try {
+        if (!req.user) {
+            throw new AppError(401, 'Authentication required');
+        }
+        const requestedUserId = req.params.id;
+        const currentUserId = req.user.id;
+        const userRights = req.user.rights || [];
+
+        if (userRights.includes(UserRight.EDIT_RIGHTS)) {
+            return next();
+        }
+        if (requestedUserId === currentUserId) {
+            return next();
+        }
+        throw new AppError(403, 'You can only access your own profile');
+    } catch (error) {
+        next(error);
+    }
+};
 
 router.get(
     '/',

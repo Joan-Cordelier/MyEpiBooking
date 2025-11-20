@@ -77,31 +77,19 @@ export const requireAnyRight = (...requiredRights: UserRight[]) => {
 export const requireSuperAdmin = requireRights(UserRight.EDIT_RIGHTS);
 
 export const requireOwnershipOrRight = (
-    getResourceOwnerId: (req: Request) => string | Promise<string>,
+    getUserIdFromRequest: (req: Request) => string,
     adminRight: UserRight
 ) => {
-    return async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
+    return (req: Request, _res: Response, next: NextFunction): void => {
         try {
             if (!req.user) {
                 throw new AppError(401, 'Authentication required');
             }
-
-            const userRights = req.user.rights || [];
-
-            // If user has admin right, allow access immediately
-            if (userRights.includes(adminRight)) {
-                logger.debug({
-                    userId: req.user.id,
-                    adminRight,
-                }, 'User has admin right');
-                return next();
-            }
-
-            // Get resource owner ID
-            const resourceOwnerId = await getResourceOwnerId(req);
+            const resourceOwnerId = getUserIdFromRequest(req);
             const isOwner = req.user.id === resourceOwnerId;
+            const hasAdminRight = req.user.rights.includes(adminRight);
 
-            if (!isOwner) {
+            if (!isOwner && !hasAdminRight) {
                 logger.warn({
                     userId: req.user.id,
                     resourceOwnerId,
@@ -112,11 +100,11 @@ export const requireOwnershipOrRight = (
                     'You do not have permission to access this resource'
                 );
             }
-
             logger.debug({
                 userId: req.user.id,
-                isOwner: true,
-            }, 'User has ownership rights');
+                isOwner,
+                hasAdminRight,
+            }, 'User has ownership or admin rights');
             next();
         } catch (error) {
             next(error);

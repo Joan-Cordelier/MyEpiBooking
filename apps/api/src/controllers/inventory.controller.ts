@@ -1,14 +1,14 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import * as inventoryService from '../services/inventory.service';
 import { asyncHandler } from '../middleware/error.middleware';
 
-export const getAll = asyncHandler(async (req: Request, res: Response) => {
+export const getAll = asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
     const inventories = await inventoryService.getAll();
 
     res.status(200).json(inventories);
 });
 
-export const getById = asyncHandler(async (req: Request, res: Response) => {
+export const getById = asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
     const { id } = req.params;
 
     const inventory = await inventoryService.getById(id);
@@ -16,7 +16,7 @@ export const getById = asyncHandler(async (req: Request, res: Response) => {
     res.status(200).json(inventory);
 });
 
-export const getByRoomId = asyncHandler(async (req: Request, res: Response) => {
+export const getByRoomId = asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
     const { roomId } = req.params;
 
     const inventory = await inventoryService.getByRoomId(roomId);
@@ -24,7 +24,7 @@ export const getByRoomId = asyncHandler(async (req: Request, res: Response) => {
     res.status(200).json(inventory);
 });
 
-export const create = asyncHandler(async (req: Request, res: Response) => {
+export const create = asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
     const { tables, chairs, hasBoard, hasTV, roomId, notes } = req.body;
 
     const inventory = await inventoryService.create(tables, chairs, hasBoard, hasTV, roomId, notes);
@@ -32,7 +32,7 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
     res.status(201).json(inventory);
 });
 
-export const update = asyncHandler(async (req: Request, res: Response) => {
+export const update = asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
     const { id } = req.params;
     const updateFields = req.body;
 
@@ -41,7 +41,7 @@ export const update = asyncHandler(async (req: Request, res: Response) => {
     res.status(200).json(inventory);
 });
 
-export const deleteInventory = asyncHandler(async (req: Request, res: Response) => {
+export const deleteInventory = asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
     const { id } = req.params;
 
     const result = await inventoryService.deleteInventory(id);

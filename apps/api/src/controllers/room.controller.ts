@@ -1,9 +1,9 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import * as roomService from '../services/room.service';
 import { asyncHandler } from '../middleware/error.middleware';
 import { RoomState } from '@prisma/client';
 
-export const getAll = asyncHandler(async (req: Request, res: Response) => {
+export const getAll = asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
     const { campusId, floor, state } = req.query;
 
     const filters = {
@@ -17,7 +17,7 @@ export const getAll = asyncHandler(async (req: Request, res: Response) => {
     res.status(200).json(rooms);
 });
 
-export const getById = asyncHandler(async (req: Request, res: Response) => {
+export const getById = asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
     const { id } = req.params;
 
     const room = await roomService.getById(id);
@@ -25,7 +25,7 @@ export const getById = asyncHandler(async (req: Request, res: Response) => {
     res.status(200).json(room);
 });
 
-export const create = asyncHandler(async (req: Request, res: Response) => {
+export const create = asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
     const { name, floor, capacity, description, campusId, state } = req.body;
 
     const room = await roomService.create(name, floor, capacity, description, campusId, state);
@@ -33,7 +33,7 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
     res.status(201).json(room);
 });
 
-export const update = asyncHandler(async (req: Request, res: Response) => {
+export const update = asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
     const { id } = req.params;
     const updateFields = req.body;
 
@@ -42,7 +42,7 @@ export const update = asyncHandler(async (req: Request, res: Response) => {
     res.status(200).json(room);
 });
 
-export const updateState = asyncHandler(async (req: Request, res: Response) => {
+export const updateState = asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
     const { id } = req.params;
     const { state } = req.body;
 
@@ -51,7 +51,7 @@ export const updateState = asyncHandler(async (req: Request, res: Response) => {
     res.status(200).json(room);
 });
 
-export const deleteRoom = asyncHandler(async (req: Request, res: Response) => {
+export const deleteRoom = asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
     const { id } = req.params;
 
     const result = await roomService.deleteRoom(id);

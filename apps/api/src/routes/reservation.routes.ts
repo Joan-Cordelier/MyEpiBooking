@@ -2,41 +2,33 @@ import { Router } from 'express';
 import { z } from 'zod';
 import * as reservationController from '../controllers/reservation.controller';
 import { authenticate } from '../middleware/auth.middleware';
-import { requireRights, requireOwnershipOrRight } from '../middleware/rights.middleware';
+import { requireRights } from '../middleware/rights.middleware';
 import { validate } from '../middleware/validate.middleware';
-import { UserRight } from '@prisma/client';
+import { UserRight, ReservationType } from '@prisma/client';
 import * as reservationService from '../services/reservation.service';
+import { Request, Response, NextFunction } from 'express';
+import { AppError } from '../middleware/error.middleware';
 
 const router = Router();
 
 // Zod schemas
+// Use prisma enum for validation to stay in sync with schema.prisma
 const createReservationSchema = z.object({
-    type: z.enum(['MEETING', 'WORK', 'KICK_OFF', 'BOOTSTRAP', 'WORKSHOP', 'TALK', 'UNEXPECTED']),
-    title: z.string().trim().min(1, 'Title is required'),
-    description: z.string().trim().optional(),
+    type: z.nativeEnum(ReservationType),
+    title: z.string().min(1, 'Title is required'),
+    description: z.string().optional(),
     startDate: z.string().datetime(),
     endDate: z.string().datetime(),
     roomId: z.string().cuid(),
-}).refine((data) => new Date(data.startDate) < new Date(data.endDate), {
-    message: "Start date must be before end date",
-    path: ["endDate"],
 });
 
 const updateReservationSchema = z.object({
-    type: z.enum(['MEETING', 'WORK', 'KICK_OFF', 'BOOTSTRAP', 'WORKSHOP', 'TALK', 'UNEXPECTED']).optional(),
-    title: z.string().trim().min(1).optional(),
-    description: z.string().trim().optional(),
+    type: z.nativeEnum(ReservationType).optional(),
+    title: z.string().min(1).optional(),
+    description: z.string().optional(),
     startDate: z.string().datetime().optional(),
     endDate: z.string().datetime().optional(),
     roomId: z.string().cuid().optional(),
-}).refine((data) => {
-    if (data.startDate && data.endDate) {
-        return new Date(data.startDate) < new Date(data.endDate);
-    }
-    return true;
-}, {
-    message: "Start date must be before end date",
-    path: ["endDate"],
 });
 
 const idParamSchema = z.object({
@@ -52,27 +44,35 @@ const dateRangeQuerySchema = z.object({
     endDate: z.string().datetime().optional(),
 });
 
-const paginationQuerySchema = z.object({
-    startDate: z.string().datetime().optional(),
-    endDate: z.string().datetime().optional(),
-    userId: z.string().cuid().optional(),
-    roomId: z.string().cuid().optional(),
-    type: z.enum(['MEETING', 'WORK', 'KICK_OFF', 'BOOTSTRAP', 'WORKSHOP', 'TALK', 'UNEXPECTED']).optional(),
-});
+const checkOwnership = async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
+    try {
+        if (!req.user) {
+            throw new AppError(401, 'Authentication required');
+        }
 
-// Middleware: user can edit their own reservation or have EDIT_RESERVATION right
-const requireOwnershipOrEditRight = requireOwnershipOrRight(
-    async (req) => {
-        const reservation = await reservationService.getById(req.params.id);
-        return reservation.userId;
-    },
-    UserRight.EDIT_RESERVATION
-);
+        const reservationId = req.params.id;
+        const userId = req.user.id;
+        const userRights = req.user.rights || [];
+
+        if (userRights.includes(UserRight.EDIT_RESERVATION)) {
+            return next();
+        }
+
+        const reservation = await reservationService.getById(reservationId);
+
+        if (reservation.userId !== userId) {
+            throw new AppError(403, 'You can only modify your own reservations');
+        }
+
+        next();
+    } catch (error) {
+        next(error);
+    }
+};
 
 router.get(
     '/',
     authenticate,
-    validate({ query: paginationQuerySchema }),
     reservationController.getAll
 );
 router.get(
@@ -103,14 +103,14 @@ router.put(
     '/:id',
     authenticate,
     validate({ params: idParamSchema, body: updateReservationSchema }),
-    requireOwnershipOrEditRight,
+    checkOwnership,
     reservationController.update
 );
 router.delete(
     '/:id',
     authenticate,
     validate({ params: idParamSchema }),
-    requireOwnershipOrEditRight,
+    checkOwnership,
     reservationController.deleteReservation
 );
 

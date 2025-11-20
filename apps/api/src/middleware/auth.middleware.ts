@@ -67,3 +67,49 @@ export const authenticate = async (
         next(error);
     }
 };
+
+export const optionalAuth = async (
+    req: Request,
+    _res: Response,
+    next: NextFunction
+): Promise<void> => {
+    try {
+        const authHeader = req.headers.authorization;
+        
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            next();
+            return;
+        }
+
+        const token = authHeader.substring(7);
+
+        try {
+            const decoded = verifyToken(token);
+            const user = await prisma.user.findUnique({
+                where: { id: decoded.userId },
+                select: {
+                    id: true,
+                    email: true,
+                    rights: {
+                        select: {
+                            right: true,
+                        },
+                    },
+                },
+            });
+            if (user) {
+                req.user = {
+                    id: user.id,
+                    email: user.email,
+                    rights: user.rights.map((r) => r.right),
+                };
+            }
+        } catch (error) {
+            // Invalid token, continue without user
+            logger.debug('Invalid token in optional auth, continuing without user');
+        }
+        next();
+    } catch (error) {
+        next(error);
+    }
+};
