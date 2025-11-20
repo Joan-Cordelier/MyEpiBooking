@@ -320,7 +320,7 @@ enum ReservationType {
     MEETING
     WORK
     KICK_OFF
-    BOOTHING
+    BOOTSTRAP
     WORKSHOP
     TALK
     UNEXPECTED
