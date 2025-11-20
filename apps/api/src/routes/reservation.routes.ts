@@ -2,11 +2,10 @@ import { Router } from 'express';
 import { z } from 'zod';
 import * as reservationController from '../controllers/reservation.controller';
 import { authenticate } from '../middleware/auth.middleware';
-import { requireRights, requireAsyncOwnershipOrRight } from '../middleware/rights.middleware';
+import { requireRights, requireOwnershipOrRight } from '../middleware/rights.middleware';
 import { validate } from '../middleware/validate.middleware';
 import { UserRight } from '@prisma/client';
 import * as reservationService from '../services/reservation.service';
-import { Request } from 'express';
 
 const router = Router();
 
@@ -61,15 +60,12 @@ const paginationQuerySchema = z.object({
     type: z.enum(['MEETING', 'WORK', 'KICK_OFF', 'BOOTSTRAP', 'WORKSHOP', 'TALK', 'UNEXPECTED']).optional(),
 });
 
-// Helper function to get reservation owner ID (used by middleware)
-const getReservationOwnerId = async (req: Request): Promise<string> => {
-    const reservation = await reservationService.getById(req.params.id);
-    return reservation.userId;
-};
-
-// Create the ownership middleware for reservations
-const requireOwnershipOrEditRight = requireAsyncOwnershipOrRight(
-    getReservationOwnerId,
+// Middleware: user can edit their own reservation or have EDIT_RESERVATION right
+const requireOwnershipOrEditRight = requireOwnershipOrRight(
+    async (req) => {
+        const reservation = await reservationService.getById(req.params.id);
+        return reservation.userId;
+    },
     UserRight.EDIT_RESERVATION
 );
 

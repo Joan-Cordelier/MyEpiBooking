@@ -76,8 +76,8 @@ export const requireAnyRight = (...requiredRights: UserRight[]) => {
 
 export const requireSuperAdmin = requireRights(UserRight.EDIT_RIGHTS);
 
-export const requireAsyncOwnershipOrRight = (
-    getResourceOwnerIdAsync: (req: Request) => Promise<string>,
+export const requireOwnershipOrRight = (
+    getResourceOwnerId: (req: Request) => string | Promise<string>,
     adminRight: UserRight
 ) => {
     return async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
@@ -97,8 +97,8 @@ export const requireAsyncOwnershipOrRight = (
                 return next();
             }
 
-            // Otherwise, check ownership (requires async operation)
-            const resourceOwnerId = await getResourceOwnerIdAsync(req);
+            // Get resource owner ID
+            const resourceOwnerId = await getResourceOwnerId(req);
             const isOwner = req.user.id === resourceOwnerId;
 
             if (!isOwner) {

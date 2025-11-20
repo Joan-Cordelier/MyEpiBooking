@@ -187,14 +187,17 @@ export async function create(data: {
     return reservation;
 }
 
-export async function update(id: string, data: {
-    type?: string;
-    title?: string;
-    description?: string;
-    startDate?: Date;
-    endDate?: Date;
-    roomId?: string;
-}) {
+export async function update(
+    id: string,
+    updateFields: {
+        type?: string;
+        title?: string;
+        description?: string;
+        startDate?: Date;
+        endDate?: Date;
+        roomId?: string;
+    }
+) {
     const existing = await prisma.reservation.findUnique({
         where: { id }
     });
@@ -203,12 +206,12 @@ export async function update(id: string, data: {
         throw new AppError(404, 'Reservation not found');
     }
 
-    const startDate = data.startDate || existing.startDate;
-    const endDate = data.endDate || existing.endDate;
-    const roomId = data.roomId || existing.roomId;
+    const startDate = (updateFields.startDate as Date) || existing.startDate;
+    const endDate = (updateFields.endDate as Date) || existing.endDate;
+    const roomId = updateFields.roomId || existing.roomId;
     
     // If room or dates are being changed, validate
-    if (data.roomId || data.startDate || data.endDate) {
+    if (updateFields.roomId || updateFields.startDate || updateFields.endDate) {
         const room = await prisma.room.findUnique({
             where: { id: roomId }
         });
@@ -239,11 +242,12 @@ export async function update(id: string, data: {
     const reservation = await prisma.reservation.update({
         where: { id },
         data: {
-            type: data.type as ReservationType | undefined,
-            title: data.title,
-            description: data.description,
-            startDate: data.startDate,
-            endDate: data.endDate,
+            ...(updateFields.type && { type: updateFields.type as ReservationType }),
+            ...(updateFields.title && { title: updateFields.title }),
+            ...(updateFields.description !== undefined && { description: updateFields.description }),
+            ...(updateFields.startDate && { startDate: updateFields.startDate }),
+            ...(updateFields.endDate && { endDate: updateFields.endDate }),
+            ...(updateFields.roomId && { roomId: updateFields.roomId }),
         },
         include: {
             user: {
