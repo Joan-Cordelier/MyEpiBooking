@@ -57,20 +57,20 @@ export default function Navbar() {
 						<span className="text-orange-400 text-2xl">_</span>
 					</div>
 					<div className="flex flex-col gap-4">
-						<Link href="/dashboard/overview" className="group relative w-40 h-8 inline-flex items-center gap-3" aria-current={isActive("/dashboard/overview") ? "page" : undefined}>
-							<div className={`pointer-events-none absolute left-[-11px] top-[-3px] w-48 h-9 bg-[#0032D7]/50 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity" ${isActive("/dashboard/overview") ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`} aria-hidden="true"></div>
-							<i className="fi fi-sr-compass-alt text-lg text-blue-700/50 group-hover:text-blue-700" aria-hidden="true"></i>
+						<Link href="/dashboard/overview" className="group relative w-32 h-8 inline-flex items-center gap-3" aria-current={isActive("/dashboard/overview") ? "page" : undefined}>
+							<div className={`pointer-events-none absolute left-[-11px] top-[-3px] w-48 h-9 bg-[#0032D7]/50 rounded-sm transition-opacity ${isActive("/dashboard/overview") ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`} aria-hidden="true"></div>
+							<i className={`fi fi-sr-compass-alt text-lg ${isActive("/dashboard/overview") ? "text-blue-700" : "text-blue-700/50 group-hover:text-blue-700"}`} aria-hidden="true"></i>
 							<span className={`${istok.className} text-lg font-bold ${isActive("/dashboard/overview") ? "text-black" : "text-black/50 group-hover:text-black"}`}>Overview</span>
 						</Link>
-						<Link href="#" className="group relative w-40 h-8 inline-flex items-center gap-3">
-							<div className="pointer-events-none absolute left-[-11px] top-[-3px] w-48 h-9 bg-[#0032D7]/50 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity" aria-hidden="true"></div>
-							<i className="fi fi-br-circle-user text-lg text-blue-700/50 group-hover:text-blue-700" aria-hidden="true"></i>
-							<span className={`${istok.className} text-lg font-bold text-black/50 group-hover:text-black`}>Students</span>
+						<Link href="/dashboard/students" className="group relative w-32 h-8 inline-flex items-center gap-3" aria-current={isActive("/dashboard/students") ? "page" : undefined}>
+							<div className={`pointer-events-none absolute left-[-11px] top-[-3px] w-48 h-9 bg-[#0032D7]/50 rounded-sm transition-opacity ${isActive("/dashboard/students") ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`} aria-hidden="true"></div>
+							<i className={`fi fi-br-circle-user text-lg ${isActive("/dashboard/students") ? "text-blue-700" : "text-blue-700/50 group-hover:text-blue-700"}`} aria-hidden="true"></i>
+							<span className={`${istok.className} text-lg font-bold ${isActive("/dashboard/students") ? "text-black" : "text-black/50 group-hover:text-black"}`}>Students</span>
 						</Link>
-						<Link href="#" className="group relative w-40 h-8 inline-flex items-center gap-3">
-							<div className="pointer-events-none absolute left-[-11px] top-[-3px] w-48 h-9 bg-[#0032D7]/50 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity" aria-hidden="true"></div>
-							<i className="fi fi-br-lock-alt text-lg text-blue-700/50 group-hover:text-blue-700" aria-hidden="true"></i>
-							<span className={`${istok.className} text-lg font-bold text-black/50 group-hover:text-black`}>Campus</span>
+						<Link href="/dashboard/campus" className="group relative w-32 h-8 inline-flex items-center gap-3" aria-current={isActive("/dashboard/campus") ? "page" : undefined}>
+							<div className={`pointer-events-none absolute left-[-11px] top-[-3px] w-48 h-9 bg-[#0032D7]/50 rounded-sm transition-opacity ${isActive("/dashboard/campus") ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`} aria-hidden="true"></div>
+							<i className={`fi fi-br-lock-alt text-lg ${isActive("/dashboard/campus") ? "text-blue-700" : "text-blue-700/50 group-hover:text-blue-700"}`} aria-hidden="true"></i>
+							<span className={`${istok.className} text-lg font-bold ${isActive("/dashboard/campus") ? "text-black" : "text-black/50 group-hover:text-black"}`}>Campus</span>
 						</Link>
 					</div>
 				</div>
