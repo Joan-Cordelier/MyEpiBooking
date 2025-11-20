@@ -1,46 +1,37 @@
 import { prisma } from '../config/database';
 import { Prisma } from '@prisma/client';
+import { AppError } from '../middleware/error.middleware';
 
 export async function getAll() {
-    try {
-        const inventories = await prisma.inventory.findMany({
-            orderBy: { createdAt: 'desc' },
-        });
+    const inventories = await prisma.inventory.findMany({
+        orderBy: { createdAt: 'desc' },
+    });
 
-        return inventories;
-    } catch (error) {
-        throw error;
-    }
+    return inventories;
 }
 
 export async function getById(id: string) {
-    try {
-        const inventory = await prisma.inventory.findUnique({
-            where: { id },
-        });
+    const inventory = await prisma.inventory.findUnique({
+        where: { id },
+    });
 
-        if (!inventory) {
-            throw new Error('Inventory not found');
-        }
-        return inventory;
-    } catch (error) {
-        throw error;
+    if (!inventory) {
+        throw new AppError(404, 'Inventory not found');
     }
+
+    return inventory;
 }
 
 export async function getByRoomId(roomId: string) {
-    try {
-        const inventory = await prisma.inventory.findUnique({
-            where: { roomId },
-        });
+    const inventory = await prisma.inventory.findUnique({
+        where: { roomId },
+    });
 
-        if (!inventory) {
-            throw new Error('Inventory not found for this room');
-        }
-        return inventory;
-    } catch (error) {
-        throw error;
+    if (!inventory) {
+        throw new AppError(404, 'Inventory not found for this room');
     }
+
+    return inventory;
 }
 
 export async function create(
@@ -51,60 +42,49 @@ export async function create(
     roomId: string,
     notes?: string | null
 ) {
-    try {
-        const roomExist = await prisma.room.findUnique({
-            where: { id: roomId },
-        });
+    const roomExist = await prisma.room.findUnique({
+        where: { id: roomId },
+    });
 
-        if (!roomExist) {
-            throw new Error('Room not found');
-        }
+    if (!roomExist) {
+        throw new AppError(404, 'Room not found');
+    }
 
-        const inventoryExist = await prisma.inventory.findUnique({
-            where: { roomId },
-        });
+    const inventoryExist = await prisma.inventory.findUnique({
+        where: { roomId },
+    });
 
-        if (inventoryExist) {
-            throw new Error('Inventory already exists for this room');
-        }
+    if (inventoryExist) {
+        throw new AppError(409, 'Inventory already exists for this room');
+    }
 
-        const data: any = {
+    const inventory = await prisma.inventory.create({
+        data: {
             tables,
             chairs,
             hasBoard,
             hasTV,
             roomId,
             notes: notes ?? null,
-        };
+        }
+    });
 
-        const inventory = await prisma.inventory.create({ data });
-        return inventory;
-    } catch (error) {
-        throw error;
-    }
+    return inventory;
 }
 
 export async function update(id: string, updateFields: Prisma.InventoryUpdateInput) {
-    try {
-        const inventory = await prisma.inventory.update({
-            where: { id },
-            data: {
-                ...updateFields,
-            },
-        });
-        return inventory;
-    } catch (error) {
-        throw error;
-    }
+    const inventory = await prisma.inventory.update({
+        where: { id },
+        data: updateFields,
+    });
+
+    return inventory;
 }
 
 export async function deleteInventory(id: string) {
-    try {
-        const inventory = await prisma.inventory.delete({
-            where: { id },
-        });
-        return inventory;
-    } catch (error) {
-        throw error;
-    }
+    const inventory = await prisma.inventory.delete({
+        where: { id },
+    });
+
+    return inventory;
 }

@@ -7,15 +7,15 @@ import { validate } from '../middleware/validate.middleware';
 const router = Router();
 
 const registerSchema = z.object({
-    email: z.string().email(),
+    email: z.string().trim().email(),
     password: z.string().min(8, 'Password must be at least 8 characters'),
-    name: z.string().optional(),
-    firstName: z.string().optional(),
+    name: z.string().trim().optional(),
+    firstName: z.string().trim().optional(),
     campusId: z.string().cuid().optional(),
 });
 
 const loginSchema = z.object({
-    email: z.string().email(),
+    email: z.string().trim().email(),
     password: z.string().min(1, 'Password is required'),
 });
 

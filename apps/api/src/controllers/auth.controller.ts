@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import * as authService from '../services/auth.service';
-import { asyncHandler } from '../middleware/error.middleware';
+import { asyncHandler, AppError } from '../middleware/error.middleware';
 
 export const register = asyncHandler(async (req: Request, res: Response) => {
     const { email, password, name, firstName, campusId } = req.body;
@@ -26,7 +26,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 
 export const me = asyncHandler(async (req: Request, res: Response) => {
     if (!req.user) {
-        throw new Error('User not authenticated');
+        throw new AppError(401, 'User not authenticated');
     }
 
     const user = await authService.getMe(req.user.id);

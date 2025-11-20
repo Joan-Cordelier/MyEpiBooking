@@ -1,9 +1,8 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import * as campusService from '../services/campus.service';
 import { asyncHandler } from '../middleware/error.middleware';
 
-
-export const getAll = asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
+export const getAll = asyncHandler(async (req: Request, res: Response) => {
     const { city, name } = req.query;
 
     const filters = {
@@ -16,7 +15,7 @@ export const getAll = asyncHandler(async (req: Request, res: Response, _next: Ne
     res.status(200).json(campuses);
 });
 
-export const getById = asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
+export const getById = asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
 
     const campus = await campusService.getById(id);
@@ -24,7 +23,7 @@ export const getById = asyncHandler(async (req: Request, res: Response, _next: N
     res.status(200).json(campus);
 });
 
-export const create = asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
+export const create = asyncHandler(async (req: Request, res: Response) => {
     const { name, city, address } = req.body;
 
     const campus = await campusService.create(name, city, address);
@@ -32,7 +31,7 @@ export const create = asyncHandler(async (req: Request, res: Response, _next: Ne
     res.status(201).json(campus);
 });
 
-export const update = asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
+export const update = asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
     const updateFields = req.body;
 
@@ -41,7 +40,7 @@ export const update = asyncHandler(async (req: Request, res: Response, _next: Ne
     res.status(200).json(campus);
 });
 
-export const deleteCampus = asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
+export const deleteCampus = asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
 
     const result = await campusService.deleteCampus(id);

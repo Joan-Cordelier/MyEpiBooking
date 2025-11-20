@@ -77,19 +77,31 @@ export const requireAnyRight = (...requiredRights: UserRight[]) => {
 export const requireSuperAdmin = requireRights(UserRight.EDIT_RIGHTS);
 
 export const requireOwnershipOrRight = (
-    getUserIdFromRequest: (req: Request) => string,
+    getResourceOwnerId: (req: Request) => string | Promise<string>,
     adminRight: UserRight
 ) => {
-    return (req: Request, _res: Response, next: NextFunction): void => {
+    return async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
         try {
             if (!req.user) {
                 throw new AppError(401, 'Authentication required');
             }
-            const resourceOwnerId = getUserIdFromRequest(req);
-            const isOwner = req.user.id === resourceOwnerId;
-            const hasAdminRight = req.user.rights.includes(adminRight);
 
-            if (!isOwner && !hasAdminRight) {
+            const userRights = req.user.rights || [];
+
+            // If user has admin right, allow access immediately
+            if (userRights.includes(adminRight)) {
+                logger.debug({
+                    userId: req.user.id,
+                    adminRight,
+                }, 'User has admin right');
+                return next();
+            }
+
+            // Get resource owner ID
+            const resourceOwnerId = await getResourceOwnerId(req);
+            const isOwner = req.user.id === resourceOwnerId;
+
+            if (!isOwner) {
                 logger.warn({
                     userId: req.user.id,
                     resourceOwnerId,
@@ -100,11 +112,11 @@ export const requireOwnershipOrRight = (
                     'You do not have permission to access this resource'
                 );
             }
+
             logger.debug({
                 userId: req.user.id,
-                isOwner,
-                hasAdminRight,
-            }, 'User has ownership or admin rights');
+                isOwner: true,
+            }, 'User has ownership rights');
             next();
         } catch (error) {
             next(error);
