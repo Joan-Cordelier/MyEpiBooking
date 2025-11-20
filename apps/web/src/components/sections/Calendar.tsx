@@ -13,9 +13,9 @@ import { Calendar, dateFnsLocalizer, Views } from "react-big-calendar";
 import { useMemo, useState, useCallback, useEffect } from "react";
 import RoomSelector from "@/components/ui/RoomSelector";
 import ReserveButton from "@/components/ui/ReserveButton";
-import { Room } from "@/lib/data";
+import { Room, Booking, ReservationType } from "@/lib/data";
 import { handleRoom } from "@/lib/handleRooms";
-import { Booking, handleMyBookings, createBooking, ReservationType } from "@/lib/handleBookings";
+import { handleBookings, createBooking } from "@/lib/handleBookings";
 
 const locales = { fr } as const;
 const localizer = dateFnsLocalizer({
@@ -128,7 +128,7 @@ export default function BookingCalendarSection() {
         let mounted = true;
         (async () => {
             try {
-                const data = await handleMyBookings();
+                const data = await handleBookings();
                 if (mounted)
                     setBookings(Array.isArray(data) ? data : []);
             } catch {

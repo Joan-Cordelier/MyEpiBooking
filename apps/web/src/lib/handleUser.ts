@@ -68,6 +68,23 @@ export function createUserStorageHandler(
     };
 }
 
+export function getUserRights(): string[] {
+    try {
+        if (typeof window === 'undefined')
+            return [];
+        const user = parseStoredUser();
+        if (!user || !Array.isArray(user.rights))
+            return [];
+        return user.rights as string[];
+    } catch {
+        return [];
+    }
+}
+
+export function hasRight(right: string): boolean {
+    return getUserRights().includes(right);
+}
+
 export function logout(): void {
     try {
         if (typeof window !== 'undefined') {
