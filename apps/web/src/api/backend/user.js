@@ -11,7 +11,7 @@ class Users extends API {
 
     /* Edit user's rights */
     async rights(id, payload, token) {
-        return this.request(`/users/${encodeURIComponent(id)}/rights`, {
+        return this.request(`/api/users/${encodeURIComponent(id)}/rights`, {
             method: 'PATCH',
             body: JSON.stringify(payload),
             headers: token ? { Authorization: `Bearer ${token}` } : {}
@@ -20,17 +20,25 @@ class Users extends API {
 
     /* Get all users */
     async getAll() {
-        return this.request('/users', {method: 'GET'});
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+        return this.request('/api/users', {
+            method: 'GET',
+            headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
     }
 
     /* Get a user by his id */
     async get(id) {
-        return this.request(`/users/${encodeURIComponent(id)}`, {method: 'GET'});
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+        return this.request(`/api/users/${encodeURIComponent(id)}`, {
+            method: 'GET',
+            headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
     }
 
     /* Create a new user. */
     async create(payload, token) {
-        return this.request('/users', {
+        return this.request('/api/users', {
             method: 'POST',
             body: JSON.stringify(payload),
             headers: token ? { Authorization: `Bearer ${token}` } : {}
@@ -39,7 +47,7 @@ class Users extends API {
 
     /* Delete a user by his id. */
     async delete(id, token) {
-        return this.request(`/users/${encodeURIComponent(id)}`, {
+        return this.request(`/api/users/${encodeURIComponent(id)}`, {
             method: 'DELETE',
             headers: token ? { Authorization: `Bearer ${token}`} : {}
         });
@@ -47,7 +55,7 @@ class Users extends API {
 
     /* Update a user by his id */
     async update(id, payload, token) {
-        return this.request(`/users/${encodeURIComponent(id)}`, {
+        return this.request(`/api/users/${encodeURIComponent(id)}`, {
             method: 'PUT',
             body: JSON.stringify(payload),
             headers: token ? { Authorization: `Bearer ${token}`} : {}
