@@ -13,7 +13,8 @@ import { Calendar, dateFnsLocalizer, Views } from "react-big-calendar";
 import { useMemo, useState, useCallback, useEffect } from "react";
 import RoomSelector from "@/components/ui/RoomSelector";
 import ReserveButton from "@/components/ui/ReserveButton";
-import { Room, handleRoom } from "@/lib/handleRooms";
+import { Room } from "@/lib/data";
+import { handleRoom } from "@/lib/handleRooms";
 import { Booking, handleMyBookings, createBooking, ReservationType } from "@/lib/handleBookings";
 
 const locales = { fr } as const;
@@ -25,7 +26,6 @@ const localizer = dateFnsLocalizer({
     locales,
 });
 
-// Include legacy / fallback types to avoid bland styling for older data (EXAM, LECTURE, OTHER)
 const TYPE_COLORS: Record<string, { bg: string; border: string }> = {
     MEETING: { bg: "#85ffb0ff", border: "#22C55E" },
     WORK: { bg: "#0284C7", border: "#375bffff" },
@@ -40,7 +40,6 @@ const TYPE_COLORS: Record<string, { bg: string; border: string }> = {
 };
 
 function eventStyleGetter(event: any) {
-    // Ghost (preview) event styling
     if (event.isGhost) {
         const baseColor = event.isConflict ? 'rgba(239,68,68,0.35)' : 'rgba(107,114,128,0.35)';
         const borderColor = event.isConflict ? '#EF4444' : '#6B7280';
@@ -95,7 +94,6 @@ export default function BookingCalendarSection() {
     const [room, setRoom] = useState<string>();
     const [rooms, setRooms] = useState<Room[]>([]);
     const [bookings, setBookings] = useState<Booking[]>([]);
-    // Form-driven slot selection (remove click selection)
     const [startDate, setStartDate] = useState("");
     const [startTime, setStartTime] = useState("");
     const [endDate, setEndDate] = useState("");
@@ -141,8 +139,6 @@ export default function BookingCalendarSection() {
         return () => { mounted = false; };
     }, []);
 
-    // (moved below provisionalSlot & conflict logic for ordering)
-
     const provisionalSlot = useMemo(() => {
         if (!startDate || !startTime || !endDate || !endTime) return null;
         try {
@@ -158,12 +154,10 @@ export default function BookingCalendarSection() {
         return bookings.some(b => b.room.name === room && provisionalSlot.start < b.end && provisionalSlot.end > b.start);
     }, [bookings, provisionalSlot, room]);
 
-    // Events + ghost preview if form has valid provisional slot
     const events = useMemo<any[]>(() => {
         const filtered: any[] = bookings.filter((e) => !room || room === 'Toutes' || (e.room && e.room.name === room));
         if (provisionalSlot && selectedRoom && selectedRoom.state && showForm) {
             filtered.push({
-                // optional id for react-big-calendar internal keying (not part of Booking type)
                 id: 'ghost-' + (selectedRoom.id || selectedRoom.name),
                 title: formValues.title || '(Prévisualisation)',
                 type: formValues.type,
@@ -194,7 +188,6 @@ export default function BookingCalendarSection() {
         setCurrentDate((d) => (view === Views.DAY ? addDays(d, 1) : addWeeks(d, 1)));
     }, [view]);
     const onToday = useCallback(() => setCurrentDate(new Date()), []);
-    // Removed calendar slot selection
 
     useEffect(() => {
         if (!room && rooms.length > 0) {
@@ -204,18 +197,8 @@ export default function BookingCalendarSection() {
     }, [rooms, room]);
 
     useEffect(() => {
-        if (bookings.length === 0)
-            return;
-        const now = new Date();
-        const upcoming = bookings.find(b => b.end > now) || bookings[bookings.length - 1];
-        if (!upcoming)
-            return;
-        const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
-        const weekEnd = addDays(weekStart, 6);
-        if (upcoming.start < weekStart || upcoming.start > weekEnd) {
-            setCurrentDate(upcoming.start);
-        }
-    }, [bookings]);
+        setCurrentDate(new Date());
+    }, []);
 
     const onReserveClick = useCallback(() => {
         if (!selectedRoom || !selectedRoom.state) return;
@@ -230,21 +213,17 @@ export default function BookingCalendarSection() {
 
     const handleSubmit = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedRoom || !selectedRoom.state) {
-            setErrorMsg("Salle non réservable ou non sélectionnée.");
-            return;
-        }
-        if (!provisionalSlot) {
-            setErrorMsg("Renseignez dates & heures.");
-            return;
-        }
-        if (provisionalSlot.end <= provisionalSlot.start) {
-            setErrorMsg("Fin doit être après début.");
-            return;
-        }
-        if (hasConflict) { setErrorMsg("Ce créneau est déjà pris pour cette salle."); return; }
+        if (!selectedRoom || !selectedRoom.state)
+            return setErrorMsg("Salle non réservable ou non sélectionnée.");
+        if (!provisionalSlot)
+            return setErrorMsg("Renseignez dates & heures.");
+        if (provisionalSlot.end <= provisionalSlot.start)
+            return setErrorMsg("Fin doit être après début.");
+        if (hasConflict) 
+            return setErrorMsg("Ce créneau est déjà pris pour cette salle.");
         setSubmitting(true);
         setErrorMsg(null);
+
         try {
             const booking = await createBooking({
                 type: formValues.type,
