@@ -19,9 +19,10 @@ class Users extends API {
     }
 
     /* Get all users */
-    async getAll() {
+    async getAll(campusId) {
         const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-        return this.request('/api/users', {
+        const url = campusId ? `/api/users?campusId=${encodeURIComponent(campusId)}` : '/api/users';
+        return this.request(url, {
             method: 'GET',
             headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
@@ -64,10 +65,10 @@ class Users extends API {
 }
 
 export const editUserRights = (id, payload, token) => new Users().rights(id, payload, token);
-export const getAllUsers = () => new Users().getAll();
+export const getAllUsers = (campusId) => new Users().getAll(campusId);
 export const getUserById = (id) => new Users().get(id);
 export const createUser = (payload, token) => new Users().create(payload, token);
-export const deleteUser = (id, token) => new User().delete(id, token);
-export const updateUser = (id, payload, token) => new UserApi().update(id, payload, token);
+export const deleteUser = (id, token) => new Users().delete(id, token);
+export const updateUser = (id, payload, token) => new Users().update(id, payload, token);
 
 export default { editUserRights, getAllUsers, getUserById, createUser, deleteUser, updateUser };

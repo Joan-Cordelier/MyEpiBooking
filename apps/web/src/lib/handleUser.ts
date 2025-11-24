@@ -81,6 +81,19 @@ export function getUserRights(): string[] {
     }
 }
 
+export function getUserCampusId(): string | null {
+    try {
+        if (typeof window === 'undefined')
+            return null;
+        const user = parseStoredUser();
+        if (!user || !user.campusId)
+            return null;
+        return user.campusId as string;
+    } catch {
+        return null;
+    }
+}
+
 export function hasRight(right: string): boolean {
     return getUserRights().includes(right);
 }

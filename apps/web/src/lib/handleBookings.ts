@@ -7,6 +7,7 @@
 
 import * as Bookings from "@/api/backend/bookings";
 import { Room, Booking, ReservationType } from "./data";
+import { getUserCampusId } from "./handleUser";
 
 function mapRoom(r: any): Room {
     return {
@@ -38,10 +39,12 @@ function mapBooking(b: any): Booking {
 
 export async function handleBookings(): Promise<Booking[]> {
     try {
+        const userCampusId = getUserCampusId();
         const data: any = await Bookings.getAllBookings();
         const list = Array.isArray(data) ? data : [];
+        const filteredList = userCampusId ? list.filter((b: any) => b?.room?.campusId === userCampusId) : list;
 
-        return list.map(mapBooking);
+        return filteredList.map(mapBooking);
     } catch (e) {
         console.error('Failed to load bookings', e);
         return [];

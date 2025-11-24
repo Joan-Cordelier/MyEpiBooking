@@ -156,7 +156,7 @@ export default function BookingCalendarSection() {
 
     const events = useMemo<any[]>(() => {
         const filtered: any[] = bookings.filter((e) => !room || room === 'Toutes' || (e.room && e.room.name === room));
-        if (provisionalSlot && selectedRoom && selectedRoom.state && showForm) {
+        if (provisionalSlot && selectedRoom && selectedRoom.state === 'RESERVABLE' && showForm) {
             filtered.push({
                 id: 'ghost-' + (selectedRoom.id || selectedRoom.name),
                 title: formValues.title || '(Prévisualisation)',
@@ -191,7 +191,7 @@ export default function BookingCalendarSection() {
 
     useEffect(() => {
         if (!room && rooms.length > 0) {
-            const first = rooms.find(r => r.state);
+            const first = rooms.find(r => r.state === 'RESERVABLE');
             if (first) setRoom(first.name);
         }
     }, [rooms, room]);
@@ -201,7 +201,7 @@ export default function BookingCalendarSection() {
     }, []);
 
     const onReserveClick = useCallback(() => {
-        if (!selectedRoom || !selectedRoom.state) return;
+        if (!selectedRoom || selectedRoom.state !== 'RESERVABLE') return;
         setShowForm(v => !v);
         setErrorMsg(null);
     }, [selectedRoom]);
@@ -213,7 +213,7 @@ export default function BookingCalendarSection() {
 
     const handleSubmit = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedRoom || !selectedRoom.state)
+        if (!selectedRoom || selectedRoom.state !== 'RESERVABLE')
             return setErrorMsg("Salle non réservable ou non sélectionnée.");
         if (!provisionalSlot)
             return setErrorMsg("Renseignez dates & heures.");
@@ -300,7 +300,7 @@ export default function BookingCalendarSection() {
                         </button>
                     </div>
                     <RoomSelector rooms={["Toutes", ...rooms.map(r => r.name)]} value={room} onChange={setRoom} />
-                    <ReserveButton disabled={!selectedRoom?.state} onClick={onReserveClick} />
+                    <ReserveButton disabled={!selectedRoom || selectedRoom.state !== 'RESERVABLE'} onClick={onReserveClick} />
                 </div>
             </div>
             {provisionalSlot && (
@@ -308,7 +308,7 @@ export default function BookingCalendarSection() {
                     Aperçu: {format(provisionalSlot.start, 'dd/MM HH:mm')} – {format(provisionalSlot.end, 'dd/MM HH:mm')} {hasConflict && <span className="ml-2 font-semibold text-red-600">(Conflit)</span>}
                 </div>
             )}
-            {showForm && selectedRoom && selectedRoom.state && (
+            {showForm && selectedRoom && selectedRoom.state === 'RESERVABLE' && (
                 <form onSubmit={handleSubmit} className="mb-4 space-y-3 rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
                     <div className="flex flex-wrap gap-4">
                         <div className="flex-1 min-w-[220px]">

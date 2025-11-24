@@ -18,6 +18,7 @@ import { useEffect, useState } from 'react';
 import { getAllUsers } from '@/api/backend/user';
 import { getAllBookings } from '@/api/backend/bookings';
 import { getAllRooms } from '@/api/backend/rooms';
+import { getUserCampusId } from '@/lib/handleUser';
 import { Anton } from "next/font/google";
 
 const anton = Anton({ subsets: ["latin"], weight: "400" });
@@ -68,18 +69,35 @@ export default function OverviewKPI() {
             try {
                 setLoading(true);
 
+                const userCampusId = getUserCampusId();
+
                 const [users, bookings, rooms] = await Promise.all([
-                    getAllUsers(),
+                    getAllUsers(userCampusId || undefined),
                     getAllBookings(),
-                    getAllRooms()
+                    getAllRooms(userCampusId || undefined)
                 ]);
-                const reservableRooms = rooms.filter((room: any) => room.state === 'RESERVABLE').length;
-                const nonReservableRooms = rooms.filter((room: any) => room.state !== 'RESERVABLE').length;
+
+                // Filtrer les utilisateurs par campus côté frontend
+                const filteredUsers = userCampusId 
+                    ? users.filter((user: any) => user.campusId === userCampusId)
+                    : users;
+
+                // Filtrer les salles par campus côté frontend
+                const filteredRooms = userCampusId
+                    ? rooms.filter((room: any) => room.campusId === userCampusId)
+                    : rooms;
+
+                // Filtrer les réservations par les salles du campus
+                const roomIds = new Set(filteredRooms.map((room: any) => room.id));
+                const filteredBookings = bookings.filter((booking: any) => roomIds.has(booking.roomId));
+
+                const reservableRooms = filteredRooms.filter((room: any) => room.state === 'RESERVABLE').length;
+                const nonReservableRooms = filteredRooms.filter((room: any) => room.state !== 'RESERVABLE').length;
                 const roomBookingCount: {[key: string]: {name: string; count: number}} = {};
 
-                bookings.forEach((booking: any) => {
+                filteredBookings.forEach((booking: any) => {
                     const roomId = booking.roomId;
-                    const room = rooms.find((r: any) => r.id === roomId);
+                    const room = filteredRooms.find((r: any) => r.id === roomId);
 
                     if (room) {
                         if (!roomBookingCount[roomId])
@@ -99,11 +117,11 @@ export default function OverviewKPI() {
 
                 setTopRooms(sortedRooms);
                 setStats({
-                    totalUsers: users.length,
-                    totalReservations: bookings.length,
+                    totalUsers: filteredUsers.length,
+                    totalReservations: filteredBookings.length,
                     reservableRooms,
                     nonReservableRooms,
-                    totalRooms: rooms.length
+                    totalRooms: filteredRooms.length
                 });
                 setError(null);
             } catch (err: any) {
@@ -133,8 +151,8 @@ export default function OverviewKPI() {
     }
 
     return (
-        <div className="space-y-6">
-            <div className={`mb-4 ml-6 mt-4 ${anton.className}`}>
+        <div className="space-y-6 px-6 py-4">
+            <div className={`mb-4 ml-2 mt-4 ${anton.className}`}>
                 <span className="text-blue-700 text-3xl">OVERVIEW</span>
                 <span className="text-orange-400 text-3xl">_</span>
             </div>
