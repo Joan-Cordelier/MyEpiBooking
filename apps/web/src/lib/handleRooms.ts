@@ -17,10 +17,8 @@ export async function handleRoom(): Promise<Room[]> {
         const filteredList = userCampusId ? list.filter((r: any) => r.campusId === userCampusId) : list;
 
         return filteredList.map((r: any) => {
-            const state = r?.state === 'RESERVABLE' || r?.state === 'NON_RESERVABLE' 
-                ? r.state 
-                : 'RESERVABLE';
-            
+            const state = r?.state === 'RESERVABLE' || r?.state === 'NON_RESERVABLE' ? r.state : 'RESERVABLE';
+
             return {
                 id: String(r?.id ?? ''),
                 name: String(r?.name ?? ''),

@@ -158,12 +158,18 @@ export default function CampusPage() {
             key: 'state',
             label: 'État',
             width: '15%',
+            sortable: false, 
             render: (room: Room) => {
-                const { label, color } = getStateLabel(room.state);
+                const isReservable = room.state === 'RESERVABLE';
                 return (
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${color}`}>
-                        {label}
-                    </span>
+                    <button
+                        onClick={() => handleToggleState(room)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
+                            isReservable  ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-red-100 text-red-700 hover:bg-red-200'
+                        }`}
+                    >
+                        {isReservable ? 'Réservable' : 'Non réservable'}
+                    </button>
                 );
             },
         },
@@ -176,12 +182,6 @@ export default function CampusPage() {
     ];
 
     const actions: Action<Room>[] = [
-        {
-            label: 'Changer état',
-            icon: 'fi fi-br-refresh',
-            onClick: handleToggleState,
-            variant: 'warning',
-        },
         {
             label: 'Modifier',
             icon: 'fi fi-br-edit',
@@ -296,36 +296,17 @@ export default function CampusPage() {
                                     />
                                 </div>
 
-                                {/* <div>
-                                    <label className="block text-sm font-semibold text-gray-800 mb-1">
-                                        Campus
-                                    </label>
-                                    <select
-                                        value={createFormData.campusId}
-                                        onChange={(e) => setCreateFormData({ ...createFormData, campusId: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-                                        required
-                                    >
-                                        <option value=""> Sélectionner un campus</option>
-                                        {campus.map((c) => (
-                                            <option key={c.id} value={c.id}>
-                                                {c.name} - {c.city}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div> */}
-
                                 <div className="flex gap-3 mt-6">
                                     <button
                                         type="button"
                                         onClick={handleCloseCreateModal}
-                                        className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold"
+                                        className="flex-1 px-4 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-semibold shadow-sm hover:shadow"
                                     >
                                         Annuler
                                     </button>
                                     <button
                                         type="submit"
-                                        className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+                                        className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                                     >
                                         Créer
                                     </button>

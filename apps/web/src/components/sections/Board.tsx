@@ -110,13 +110,13 @@ export default function Board<T extends Record<string, any>>({
     const getActionButtonClass = (variant?: string) => {
         switch (variant) {
             case 'danger':
-                return 'bg-red-100 text-red-600 hover:bg-red-200';
+                return 'bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 border border-red-200 hover:border-red-300 hover:shadow-md';
             case 'success':
-                return 'bg-green-100 text-green-600 hover:bg-green-200';
+                return 'bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700 border border-green-200 hover:border-green-300 hover:shadow-md';
             case 'warning':
-                return 'bg-orange-100 text-orange-600 hover:bg-orange-200';
+                return 'bg-orange-50 text-orange-600 hover:bg-orange-100 hover:text-orange-700 border border-orange-200 hover:border-orange-300 hover:shadow-md';
             default:
-                return 'bg-blue-100 text-blue-600 hover:bg-blue-200';
+                return 'bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 border border-blue-200 hover:border-blue-300 hover:shadow-md';
         }
     };
 
@@ -140,10 +140,10 @@ export default function Board<T extends Record<string, any>>({
                 {onAdd && (
                     <button
                         onClick={onAdd}
-                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+                        className="flex items-center gap-4 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                     >
-                        <i className="fi fi-br-plus"></i>
-                        {addButtonLabel}
+                        <i className="fi fi-br-plus text-lg leading-none flex items-center -ml-0.5"></i>
+                        <span>{addButtonLabel}</span>
                     </button>
                 )}
             </div>
@@ -192,7 +192,7 @@ export default function Board<T extends Record<string, any>>({
                                     </th>
                                 ))}
                                 {actions && actions.length > 0 && (
-                                    <th className="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                    <th className="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">
                                         Actions
                                     </th>
                                 )}
@@ -211,8 +211,8 @@ export default function Board<T extends Record<string, any>>({
                                             );
                                         })}
                                         {actions && actions.length > 0 && (
-                                            <td className="px-6 py-4 text-right">
-                                                <div className="flex justify-end gap-2">
+                                            <td className="px-6 py-4">
+                                                <div className="flex justify-center gap-2">
                                                     {actions
                                                         .filter((action) =>
                                                             action.condition ? action.condition(item) : true
@@ -221,12 +221,12 @@ export default function Board<T extends Record<string, any>>({
                                                             <button
                                                                 key={actionIdx}
                                                                 onClick={() => action.onClick(item)}
-                                                                className={`p-2 rounded-lg transition-colors ${getActionButtonClass(
+                                                                className={`p-0 w-10 h-10 flex items-center justify-center rounded-lg transition-all duration-200 transform hover:-translate-y-0.5 ${getActionButtonClass(
                                                                     action.variant
                                                                 )}`}
                                                                 title={action.label}
                                                             >
-                                                                <i className={action.icon}></i>
+                                                                <i className={`${action.icon} text-base leading-none flex items-center justify-center`}></i>
                                                             </button>
                                                         ))}
                                                 </div>
