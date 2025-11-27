@@ -19,8 +19,9 @@ class Rooms extends API {
     }
 
     /* Get all rooms */
-    async getAll() {
-        return this.request('/api/rooms', {method: 'GET'});
+    async getAll(campusId) {
+        const url = campusId ? `/api/rooms?campusId=${encodeURIComponent(campusId)}` : '/api/rooms';
+        return this.request(url, {method: 'GET'});
     }
 
     /* Get a room by its id */
@@ -56,7 +57,7 @@ class Rooms extends API {
 }
 
 export const setRoomState = (id, payload, token) => new Rooms().setState(id, payload, token);
-export const getAllRooms = () => new Rooms().getAll();
+export const getAllRooms = (campusId) => new Rooms().getAll(campusId);
 export const getRoomById = (id) => new Rooms().get(id);
 export const createRoom = (payload, token) => new Rooms().create(payload, token);
 export const deleteRoom = (id, token) => new Rooms().delete(id, token);

@@ -6,46 +6,31 @@
 */
 
 import * as Bookings from "@/api/backend/bookings";
-import { Room } from "./handleRooms";
-
-export type ReservationType =
-    | 'MEETING'
-    | 'WORK'
-    | 'KICK_OFF'
-    | 'BOOTHING'
-    | 'WORKSHOP'
-    | 'TALK'
-    | 'UNEXPECTED';
-
-export type Booking = {
-    type: ReservationType;
-    title: string;
-    description: string;
-    author: string;
-    start: Date;
-    end: Date;
-    room: Room;
-}
+import { Room, Booking, ReservationType } from "./data";
+import { getUserCampusId } from "./handleUser";
 
 function mapRoom(r: any): Room {
-    const up = String(r?.state ?? '').toUpperCase();
-    const isReservable = up === 'RESERVABLE' || up === 'RESEVABLE';
     return {
         id: String(r?.id ?? ''),
         name: String(r?.name ?? ''),
         floor: String(r?.floor ?? ''),
-        state: isReservable,
+        state: (r?.state === 'RESERVABLE' || r?.state === 'NON_RESERVABLE') ? r.state : 'NON_RESERVABLE',
         capacity: Number(r?.capacity ?? 0),
         description: String(r?.description ?? ''),
+        campusId: String(r?.campusId ?? ''),
+        createdAt: String(r?.createdAt ?? ''),
     };
 }
 
 function mapBooking(b: any): Booking {
+    const userName = String(b?.user?.name ?? '');
+    const author = userName || 'Inconnu';
+
     return {
         type: (String(b?.type ?? '') as ReservationType),
         title: String(b?.title ?? ''),
         description: String(b?.description ?? ''),
-        author: String(b?.user?.name ?? b?.user?.email ?? ''),
+        author,
         start: new Date(b?.startDate ?? b?.start ?? Date.now()),
         end: new Date(b?.endDate ?? b?.end ?? Date.now()),
         room: mapRoom(b?.room ?? {}),
@@ -54,22 +39,14 @@ function mapBooking(b: any): Booking {
 
 export async function handleBookings(): Promise<Booking[]> {
     try {
+        const userCampusId = getUserCampusId();
         const data: any = await Bookings.getAllBookings();
         const list = Array.isArray(data) ? data : [];
-        return list.map(mapBooking);
+        const filteredList = userCampusId ? list.filter((b: any) => b?.room?.campusId === userCampusId) : list;
+
+        return filteredList.map(mapBooking);
     } catch (e) {
         console.error('Failed to load bookings', e);
-        return [];
-    }
-}
-
-export async function handleMyBookings(): Promise<Booking[]> {
-    try {
-        const data: any = await Bookings.getMyBookings();
-        const list = Array.isArray(data) ? data : [];
-        return list.map(mapBooking);
-    } catch (e) {
-        console.error('Failed to load my bookings', e);
         return [];
     }
 }

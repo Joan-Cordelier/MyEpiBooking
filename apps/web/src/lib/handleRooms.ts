@@ -5,35 +5,29 @@
 ** Romms handler functions
 */
 
-import * as Rooms from "@/api/backend/rooms"
-
-export type Room = {
-    id: string;
-    name: string;
-    floor: string;
-    state: boolean;
-    capacity: number;
-    description: string;
-}
+import { Room } from "./data";
+import * as Rooms from "@/api/backend/rooms";
+import { getUserCampusId } from "./handleUser";
 
 export async function handleRoom(): Promise<Room[]> {
-    const rooms = Rooms.getAllRooms();
-
     try {
-        const data: any = await Rooms.getAllRooms();
+        const userCampusId = getUserCampusId();
+        const data: any = await Rooms.getAllRooms(userCampusId || undefined);
         const list = Array.isArray(data) ? data : [];
+        const filteredList = userCampusId ? list.filter((r: any) => r.campusId === userCampusId) : list;
 
-        return list.map((r: any) => {
-            const up = String(r?.state ?? '').toUpperCase();
-            const isReservable = up === 'RESERVABLE' || up === 'RESEVABLE';
+        return filteredList.map((r: any) => {
+            const state = r?.state === 'RESERVABLE' || r?.state === 'NON_RESERVABLE' ? r.state : 'RESERVABLE';
 
             return {
                 id: String(r?.id ?? ''),
                 name: String(r?.name ?? ''),
                 floor: String(r?.floor ?? ''),
-                state: isReservable,
+                state: state,
                 capacity: Number(r?.capacity ?? 0),
                 description: String(r?.description ?? ''),
+                campusId: String(r?.campusId ?? ''),
+                createdAt: String(r?.createdAt ?? ''),
             } as Room;
         });
     } catch (e) {
