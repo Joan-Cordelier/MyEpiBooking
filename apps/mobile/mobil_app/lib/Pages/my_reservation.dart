@@ -1,27 +1,63 @@
 import 'package:flutter/material.dart';
 import '../Widget/app_shell.dart';
+import '../Service/api_service.dart';
+import '../Service/auth_service.dart';
 
-class MyReservationsPage extends StatelessWidget {
+class MyReservationsPage extends StatefulWidget {
   const MyReservationsPage({super.key});
 
   @override
+  State<MyReservationsPage> createState() => _MyReservationsPageState();
+}
+
+class _MyReservationsPageState extends State<MyReservationsPage> {
+  List<dynamic> reservations = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchReservations();
+  }
+
+  Future<void> _fetchReservations() async {
+    try {
+      final token = await AuthService.getToken();
+      if (token != null) {
+        final data = await ApiService.fetchMyReservations(token);
+        setState(() {
+          reservations = data;
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() => isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur lors du chargement: $e')),
+        );
+      }
+    }
+  }
+
+  String _formatDate(String dateString) {
+    final date = DateTime.parse(dateString);
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}';
+  }
+
+  String _formatTime(String dateString) {
+    final date = DateTime.parse(dateString);
+    return '${date.hour.toString().padLeft(2, '0')}h';
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final reservations = [
-      {
-        'room': '601',
-        'date': '12/03',
-        'time': '14h / 15h',
-        'activity': 'travail',
-        'description': '',
-      },
-      {
-        'room': '601',
-        'date': '12/03',
-        'time': '14h / 15h',
-        'activity': 'travail',
-        'description': '',
-      },
-    ];
+    if (isLoading) {
+      return AppShell(
+        title: 'Mes Réservations',
+        child: const Center(child: CircularProgressIndicator()),
+      );
+    }
 
     return AppShell(
       title: 'Mes Reservation',
@@ -69,11 +105,11 @@ class MyReservationsPage extends StatelessWidget {
                 ...reservations.map(
                   (res) => TableRow(
                     children: [
-                      _DataCell(res['room']!),
-                      _DataCell(res['date']!),
-                      _DataCell(res['time']!),
-                      _DataCell(res['activity']!),
-                      _DataCell(res['description']!),
+                      _DataCell(res['room']['name'] ?? 'N/A'),
+                      _DataCell(_formatDate(res['startDate'])),
+                      _DataCell('${_formatTime(res['startDate'])} / ${_formatTime(res['endDate'])}'),
+                      _DataCell(res['type'] ?? 'N/A'),
+                      _DataCell(res['title'] ?? ''),
                     ],
                   ),
                 ),
