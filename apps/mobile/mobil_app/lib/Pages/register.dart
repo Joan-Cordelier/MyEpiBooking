@@ -2,24 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../Provider/auth_provider.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class RegisterPage extends StatefulWidget {
+  const RegisterPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _RegisterPageState extends State<RegisterPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _nameController = TextEditingController();
+  final _firstNameController = TextEditingController();
   bool _isLoading = false;
 
-  Future<void> _login() async {
+  Future<void> _register() async {
     setState(() => _isLoading = true);
     try {
-      await context.read<AuthProvider>().login(
+      await context.read<AuthProvider>().register(
         _emailController.text,
         _passwordController.text,
+        _nameController.text,
+        _firstNameController.text,
       );
       if (mounted) {
         Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
@@ -27,7 +31,7 @@ class _LoginPageState extends State<LoginPage> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur de connexion: $e')),
+          SnackBar(content: Text('Erreur d\'inscription: $e')),
         );
       }
     } finally {
@@ -37,9 +41,8 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    print('Building LoginPage');
     return Scaffold(
-      appBar: AppBar(title: const Text('Connexion')),
+      appBar: AppBar(title: const Text('Inscription')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -55,22 +58,20 @@ class _LoginPageState extends State<LoginPage> {
               decoration: const InputDecoration(labelText: 'Mot de passe'),
               obscureText: true,
             ),
+            TextField(
+              controller: _nameController,
+              decoration: const InputDecoration(labelText: 'Nom'),
+            ),
+            TextField(
+              controller: _firstNameController,
+              decoration: const InputDecoration(labelText: 'Prénom'),
+            ),
             const SizedBox(height: 20),
             _isLoading
                 ? const CircularProgressIndicator()
-                : Column(
-                    children: [
-                      ElevatedButton(
-                        onPressed: _login,
-                        child: const Text('Se connecter'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pushNamed('/register');
-                        },
-                        child: const Text('S\'inscrire'),
-                      ),
-                    ],
+                : ElevatedButton(
+                    onPressed: _register,
+                    child: const Text('S\'inscrire'),
                   ),
           ],
         ),
@@ -78,4 +79,3 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
-

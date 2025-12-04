@@ -20,6 +20,15 @@ class AuthService {
     await prefs.remove(_tokenKey);
   }
 
+  static Future<User?> register(String email, String password, String name, String firstName) async {
+    final response = await ApiService.register(email, password, name, firstName);
+    if (response.containsKey('token') && response.containsKey('user')) {
+      await setToken(response['token']);
+      return User.fromJson(response['user']);
+    }
+    return null;
+  }
+
   static Future<User?> login(String email, String password) async {
     final response = await ApiService.login(email, password);
     if (response.containsKey('token') && response.containsKey('user')) {

@@ -11,8 +11,15 @@ class AuthProvider with ChangeNotifier {
   bool get isAuthenticated => _user != null;
 
   Future<void> checkAuth() async {
+    print('checkAuth called');
     _user = await AuthService.getCurrentUser();
+    print('checkAuth completed, user: $_user');
     _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> register(String email, String password, String name, String firstName) async {
+    _user = await AuthService.register(email, password, name, firstName);
     notifyListeners();
   }
 

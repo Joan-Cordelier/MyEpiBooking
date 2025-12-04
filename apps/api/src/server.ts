@@ -97,11 +97,11 @@ const startServer = async () => {
     try {
         await connectDatabase();
         logger.info('Database connected successfully');
-        const server = app.listen(env.PORT, () => {
+        const server = app.listen(env.PORT, '0.0.0.0', () => {
             logger.info({
                 port: env.PORT,
                 environment: env.NODE_ENV,
-            }, `Server is running on http://localhost:${env.PORT}`);
+            }, `Server is running on http://0.0.0.0:${env.PORT} (accessible from emulator at http://10.0.2.2:${env.PORT})`);
             logger.info(`Health check available at http://localhost:${env.PORT}/health`);
             logger.info(`API info available at http://localhost:${env.PORT}/api`);
         });

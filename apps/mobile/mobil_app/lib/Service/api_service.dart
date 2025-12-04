@@ -6,12 +6,27 @@ class ApiService {
 
   // Méthode pour récupérer toutes les salles
   static Future<List<dynamic>> fetchRooms() async {
-    final response = await http.get(Uri.parse('$baseUrl/api/rooms'));
+    final response = await http.get(Uri.parse('$baseUrl/api/rooms')).timeout(const Duration(seconds: 5));
 
     if (response.statusCode == 200) {
       return json.decode(response.body);
     } else {
       throw Exception('Failed to load rooms');
+    }
+  }
+
+  // Méthode d'inscription
+  static Future<Map<String, dynamic>> register(String email, String password, String name, String firstName) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/api/auth/register'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'email': email, 'password': password, 'name': name, 'firstName': firstName}),
+    ).timeout(const Duration(seconds: 5));
+
+    if (response.statusCode == 201) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to register');
     }
   }
 
@@ -21,7 +36,7 @@ class ApiService {
       Uri.parse('$baseUrl/api/auth/login'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({'email': email, 'password': password}),
-    );
+    ).timeout(const Duration(seconds: 5));
 
     if (response.statusCode == 200) {
       return json.decode(response.body);
@@ -35,7 +50,7 @@ class ApiService {
     final response = await http.get(
       Uri.parse('$baseUrl/api/auth/me'),
       headers: {'Authorization': 'Bearer $token'},
-    );
+    ).timeout(const Duration(seconds: 5));
 
     if (response.statusCode == 200) {
       return json.decode(response.body);
@@ -49,7 +64,7 @@ class ApiService {
     final response = await http.get(
       Uri.parse('$baseUrl/api/reservations/me'),
       headers: {'Authorization': 'Bearer $token'},
-    );
+    ).timeout(const Duration(seconds: 5));
 
     if (response.statusCode == 200) {
       return json.decode(response.body);
@@ -67,7 +82,7 @@ class ApiService {
         'Content-Type': 'application/json',
       },
       body: json.encode(reservationData),
-    );
+    ).timeout(const Duration(seconds: 5));
 
     if (response.statusCode == 201) {
       return json.decode(response.body);
