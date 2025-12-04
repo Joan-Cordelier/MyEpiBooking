@@ -42,18 +42,21 @@ export default function Navbar() {
 			{/* Liens */}
 			<div className="flex-1 flex flex-col gap-5">
 			<Link href="/" className="group relative w-32 h-8 inline-flex items-center gap-3" aria-current={isActive("/") ? "page" : undefined}>
-				<div className={`pointer-events-none absolute left-[-11px] top-[-3px] w-48 h-9 bg-[#0032D7]/50 rounded-sm transition-opacity ${isActive("/") ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`} aria-hidden="true"></div>
+				<div className={`pointer-events-none absolute left-[-11px] top-[-3px] w-48 h-9 bg-[#0032D7]/30 rounded-sm transition-opacity ${isActive("/") ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`} aria-hidden="true"></div>
 				<i className={`fi fi-sr-map text-xl flex items-center ${isActive("/") ? "text-blue-700" : "text-blue-700/50 group-hover:text-blue-700"}`} aria-hidden="true"></i>
 				<span className={`${istok.className} text-base font-bold ${isActive("/") ? "text-black" : "text-black/50 group-hover:text-black"}`}>Plan</span>
-			</Link>			<Link href="/schedule" className="group relative w-32 h-8 inline-flex items-center gap-3" aria-current={isActive("/schedule") ? "page" : undefined}>
-				<div className={`pointer-events-none absolute left-[-11px] top-[-3px] w-48 h-9 bg-[#0032D7]/50 rounded-sm transition-opacity ${isActive("/schedule") ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`} aria-hidden="true"></div>
+			</Link>
+			<Link href="/schedule" className="group relative w-32 h-8 inline-flex items-center gap-3" aria-current={isActive("/schedule") ? "page" : undefined}>
+				<div className={`pointer-events-none absolute left-[-11px] top-[-3px] w-48 h-9 bg-[#0032D7]/30 rounded-sm transition-opacity ${isActive("/schedule") ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`} aria-hidden="true"></div>
 				<i className={`fi fi-sr-calendar text-xl flex items-center ${isActive("/schedule") ? "text-blue-700" : "text-blue-700/50 group-hover:text-blue-700"}`} aria-hidden="true"></i>
 				<span className={`${istok.className} text-base font-bold ${isActive("/schedule") ? "text-black" : "text-black/50 group-hover:text-black"}`}>Schedule</span>
-			</Link>			<Link href="#" className="group relative w-36 h-8 inline-flex items-center gap-3">
-				<div className="pointer-events-none absolute left-[-11px] top-[-3px] w-48 h-9 bg-[#0032D7]/50 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity" aria-hidden="true"></div>
-				<i className="fi fi-sr-calendar-check text-xl flex items-center text-blue-700/50 group-hover:text-blue-700" aria-hidden="true"></i>
-				<span className={`${istok.className} text-base font-bold text-black/50 group-hover:text-black`}>My Bookings</span>
-			</Link>				{/* Section Dashboard */}
+			</Link>
+			<Link href="/bookings" className="group relative w-32 h-8 inline-flex items-center gap-3" aria-current={isActive("/bookings") ? "page" : undefined}>
+				<div className={`pointer-events-none absolute left-[-11px] top-[-3px] w-48 h-9 bg-[#0032D7]/30 rounded-sm transition-opacity ${isActive("/bookings") ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`} aria-hidden="true"></div>
+				<i className={`fi fi-sr-calendar-check text-xl flex items-center ${isActive("/bookings") ? "text-blue-700" : "text-blue-700/50 group-hover:text-blue-700"}`} aria-hidden="true"></i>
+				<span className={`${istok.className} text-base font-bold ${isActive("/bookings") ? "text-black" : "text-black/50 group-hover:text-black"}`}>Bookings</span>
+			</Link>
+			{/* Section Dashboard */}
 				{canAccessDashboard && (
 					<div className="mt-2">
 						<div className={`${anton.className} mb-3`}>
@@ -62,20 +65,20 @@ export default function Navbar() {
 						</div>
 						<div className="flex flex-col gap-4">
 						<Link href="/dashboard/overview" className="group relative w-32 h-8 inline-flex items-center gap-3" aria-current={isActive("/dashboard/overview") ? "page" : undefined}>
-							<div className={`pointer-events-none absolute left-[-11px] top-[-3px] w-48 h-9 bg-[#0032D7]/50 rounded-sm transition-opacity ${isActive("/dashboard/overview") ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`} aria-hidden="true"></div>
+							<div className={`pointer-events-none absolute left-[-11px] top-[-3px] w-48 h-9 bg-[#0032D7]/30 rounded-sm transition-opacity ${isActive("/dashboard/overview") ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`} aria-hidden="true"></div>
 							<i className={`fi fi-sr-compass-alt text-xl flex items-center ${isActive("/dashboard/overview") ? "text-blue-700" : "text-blue-700/50 group-hover:text-blue-700"}`} aria-hidden="true"></i>
 							<span className={`${istok.className} text-base font-bold ${isActive("/dashboard/overview") ? "text-black" : "text-black/50 group-hover:text-black"}`}>Overview</span>
 						</Link>
 							{hasRight('EDIT_USER') && (
 							<Link href="/dashboard/students" className="group relative w-32 h-8 inline-flex items-center gap-3" aria-current={isActive("/dashboard/students") ? "page" : undefined}>
-								<div className={`pointer-events-none absolute left-[-11px] top-[-3px] w-48 h-9 bg-[#0032D7]/50 rounded-sm transition-opacity ${isActive("/dashboard/students") ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`} aria-hidden="true"></div>
+								<div className={`pointer-events-none absolute left-[-11px] top-[-3px] w-48 h-9 bg-[#0032D7]/30 rounded-sm transition-opacity ${isActive("/dashboard/students") ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`} aria-hidden="true"></div>
 								<i className={`fi fi-br-circle-user text-xl flex items-center ${isActive("/dashboard/students") ? "text-blue-700" : "text-blue-700/50 group-hover:text-blue-700"}`} aria-hidden="true"></i>
 								<span className={`${istok.className} text-base font-bold ${isActive("/dashboard/students") ? "text-black" : "text-black/50 group-hover:text-black"}`}>Students</span>
 							</Link>
 							)}
 							{hasRight('EDIT_ROOM') && (
 							<Link href="/dashboard/campus" className="group relative w-32 h-8 inline-flex items-center gap-3" aria-current={isActive("/dashboard/campus") ? "page" : undefined}>
-								<div className={`pointer-events-none absolute left-[-11px] top-[-3px] w-48 h-9 bg-[#0032D7]/50 rounded-sm transition-opacity ${isActive("/dashboard/campus") ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`} aria-hidden="true"></div>
+								<div className={`pointer-events-none absolute left-[-11px] top-[-3px] w-48 h-9 bg-[#0032D7]/30 rounded-sm transition-opacity ${isActive("/dashboard/campus") ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`} aria-hidden="true"></div>
 								<i className={`fi fi-br-lock-alt text-xl flex items-center ${isActive("/dashboard/campus") ? "text-blue-700" : "text-blue-700/50 group-hover:text-blue-700"}`} aria-hidden="true"></i>
 								<span className={`${istok.className} text-base font-bold ${isActive("/dashboard/campus") ? "text-black" : "text-black/50 group-hover:text-black"}`}>Campus</span>
 							</Link>
@@ -92,9 +95,9 @@ export default function Navbar() {
 				onClick={doLogout}
 				aria-label="Se déconnecter"
 			>
-			<div className="pointer-events-none absolute left-[-11px] top-[-3px] w-48 h-9 bg-[#0032D7]/50 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity" aria-hidden="true"></div>
-			<i className="fi fi-br-power text-xl flex items-center text-red-600/50 group-hover:text-red-600" aria-hidden="true"></i>
-			<span className={`${istok.className} text-base font-bold text-black/50 group-hover:text-black`}>Log out</span>
+			<div className="pointer-events-none absolute left-[-11px] top-[-3px] w-48 h-9 bg-red-600/30 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity" aria-hidden="true"></div>
+			<i className="fi fi-br-power text-xl flex items-center text-red-600/70 group-hover:text-red-700" aria-hidden="true"></i>
+			<span className={`${istok.className} text-base font-bold text-black/70 group-hover:text-black`}>Log out</span>
 		</button>
 		</nav>
 	);
