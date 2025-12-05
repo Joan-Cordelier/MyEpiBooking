@@ -8,6 +8,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Board, { Column, Action } from '@/components/sections/Board';
 import styles from "../../page.module.css";
 import { getMyBookings, deleteBooking } from '@/api/backend/bookings';
@@ -35,6 +36,7 @@ const TYPE_COLORS: Record<string, string> = {
 };
 
 export default function BookingsPage() {
+    const router = useRouter();
     const [bookings, setBookings] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -101,10 +103,8 @@ export default function BookingsPage() {
         setSelectedBooking(null);
     };
 
-    const handleEdit = (booking: any) => {
-        // TODO: Implémenter l'édition
-        console.log('Edit booking:', booking);
-        alert('Fonctionnalité d\'édition à implémenter');
+    const handleView = (booking: any) => {
+        router.push(`/bookings/${booking.id}`);
     };
 
     const columns: Column<any>[] = [
@@ -183,9 +183,9 @@ export default function BookingsPage() {
 
     const actions: Action<any>[] = [
         {
-            label: 'Modifier',
-            icon: 'fi fi-br-edit',
-            onClick: handleEdit,
+            label: 'Voir',
+            icon: 'fi fi-br-eye',
+            onClick: handleView,
             variant: 'primary',
         },
         {

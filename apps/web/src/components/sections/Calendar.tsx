@@ -17,7 +17,9 @@ import { Room, Booking, ReservationType } from "@/lib/data";
 import { handleRoom } from "@/lib/handleRooms";
 import { handleBookings, createBooking } from "@/lib/handleBookings";
 
-const locales = { fr } as const;
+const locales = {
+    fr: fr
+};
 const localizer = dateFnsLocalizer({
     format,
     parse: (dateString: string, _formatString: string, _backupDate: Date) => new Date(dateString),
@@ -373,6 +375,7 @@ export default function BookingCalendarSection() {
                     <div className="rbc-epi rounded-2xl border border-black/20 bg-white p-3 md:p-4">
                 <Calendar
                     localizer={localizer}
+                    // formats={formats}
                     events={events}
                     startAccessor="start"
                     endAccessor="end"

@@ -48,11 +48,13 @@ export default function Header({ username: usernameProp, avatarUrl: avatarProp, 
     <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between bg-blue-700 h-14 sm:h-16 px-4 sm:px-6">
       {/* EPITECH Logo */}
       <Link href="/" className="inline-flex items-center">
-        <img
-          src={logoUrl}
-          alt="Logo"
-          className="h-8 sm:h-10 w-auto cursor-pointer"
-        />
+        {logoUrl && (
+          <img
+            src={logoUrl}
+            alt="Logo"
+            className="h-8 sm:h-10 w-auto cursor-pointer"
+          />
+        )}
       </Link>
 
       {/* User Profile */}
@@ -62,17 +64,19 @@ export default function Header({ username: usernameProp, avatarUrl: avatarProp, 
           aria-haspopup="menu"
           className="flex items-center gap-2 sm:gap-3 text-white focus:outline-none rounded-lg px-1"
         >
-          <img
-            src={avatar ?? '/images/68x70.svg'}
-            alt="avatar"
-            className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl object-cover"
-          />
-          <span className="hidden sm:inline text-base sm:text-lg font-bold">{(username ?? 'Utilisateur').toString().toUpperCase()}</span>
-                    <i className="fi fi-br-angle-small-down text-sm leading-none mt-[1px]"></i>
-
+          {avatar ? (
+            <img
+              src={avatar}
+              alt="avatar"
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl object-cover"
+            />
+          ) : (
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-blue-500 flex items-center justify-center">
+              <span className="text-white font-bold text-lg">{username ? username[0].toUpperCase() : '?'}</span>
+            </div>
+          )}
+          <span className="hidden sm:inline text-base sm:text-s font-bold">{(username ?? '').toString().toUpperCase()}</span>
         </button>
-
-        
       </div>
     </header>
   );
