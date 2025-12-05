@@ -27,6 +27,7 @@ function mapBooking(b: any): Booking {
     const author = userName || 'Inconnu';
 
     return {
+        id: String(b?.id ?? ''),
         type: (String(b?.type ?? '') as ReservationType),
         title: String(b?.title ?? ''),
         description: String(b?.description ?? ''),

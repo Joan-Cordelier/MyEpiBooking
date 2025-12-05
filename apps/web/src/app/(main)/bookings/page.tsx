@@ -11,7 +11,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Board, { Column, Action } from '@/components/sections/Board';
 import styles from "../../page.module.css";
-import { getMyBookings, deleteBooking } from '@/api/backend/bookings';
+import { getMyBookings, deleteBooking, getAllBookings } from '@/api/backend/bookings';
+import { hasRight, getUserId, getUserCampusId } from '@/lib/handleUser';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -38,10 +39,17 @@ const TYPE_COLORS: Record<string, string> = {
 export default function BookingsPage() {
     const router = useRouter();
     const [bookings, setBookings] = useState<any[]>([]);
+    const [allBookings, setAllBookings] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
+    const [canEditReservations, setCanEditReservations] = useState(false);
+    const [filterMode, setFilterMode] = useState<'all' | 'mine'>('all');
+
+    useEffect(() => {
+        setCanEditReservations(hasRight('EDIT_RESERVATION'));
+    }, []);
 
     useEffect(() => {
         fetchMyBookings();
@@ -50,7 +58,9 @@ export default function BookingsPage() {
     const fetchMyBookings = async () => {
         try {
             setLoading(true);
-            const data = await getMyBookings();
+            const hasEditRight = hasRight('EDIT_RESERVATION');
+            const userCampusId = getUserCampusId();
+            const data = hasEditRight ? await getAllBookings() : await getMyBookings();
             const mappedData = Array.isArray(data) ? data.map((b: any) => ({
                 id: b.id,
                 title: b.title,
@@ -63,11 +73,21 @@ export default function BookingsPage() {
                     name: b.room?.name,
                     floor: b.room?.floor,
                     capacity: b.room?.capacity,
+                    campusId: b.room?.campusId,
                 },
+                author: b.user?.name || b.user?.firstName || b.user?.email || 'Inconnu',
+                userId: b.user?.id,
                 createdAt: b.createdAt,
             })) : [];
+            const filteredByCampus = userCampusId 
+                ? mappedData.filter(b => {
+                    const match = String(b.room.campusId) === String(userCampusId);
+                    return match;
+                })
+                : mappedData;
 
-            setBookings(mappedData);
+            setAllBookings(filteredByCampus);
+            setBookings(filteredByCampus);
             setError(null);
         } catch (err: any) {
             console.error('Error fetching bookings:', err);
@@ -77,6 +97,17 @@ export default function BookingsPage() {
         }
     };
 
+    useEffect(() => {
+        if (!canEditReservations)
+            return;
+        if (filterMode === 'mine') {
+            const currentUserId = getUserId();
+            setBookings(allBookings.filter(b => b.userId === currentUserId));
+        } else {
+            setBookings(allBookings);
+        }
+    }, [filterMode, allBookings, canEditReservations]);
+
     const handleDelete = async (booking: any) => {
         setSelectedBooking(booking);
         setIsDeleteModalOpen(true);
@@ -85,7 +116,6 @@ export default function BookingsPage() {
     const confirmDelete = async () => {
         if (!selectedBooking)
             return;
-
         try {
             const token = localStorage.getItem('token');
             await deleteBooking(selectedBooking.id);
@@ -111,12 +141,12 @@ export default function BookingsPage() {
         {
             key: 'title',
             label: 'Titre',
-            width: '20%',
+            width: canEditReservations ? '18%' : '20%',
         },
         {
             key: 'type',
             label: 'Type',
-            width: '12%',
+            width: canEditReservations ? '10%' : '12%',
             render: (booking: any) => {
                 const typeLabel = TYPE_LABELS[booking.type] || booking.type;
                 const typeColor = TYPE_COLORS[booking.type] || TYPE_COLORS.OTHER;
@@ -127,10 +157,20 @@ export default function BookingsPage() {
                 );
             },
         },
+        ...(canEditReservations ? [{
+            key: 'author',
+            label: 'Auteur',
+            width: '12%',
+            render: (booking: any) => (
+                <span className="text-sm text-gray-900 font-medium">
+                    {booking.author}
+                </span>
+            ),
+        }] : []),
         {
             key: 'room.name',
             label: 'Salle',
-            width: '15%',
+            width: canEditReservations ? '13%' : '15%',
             render: (booking: any) => (
                 <div className="flex flex-col">
                     <span className="font-semibold text-gray-900">{booking.room?.name || '-'}</span>
@@ -141,7 +181,7 @@ export default function BookingsPage() {
         {
             key: 'startDate',
             label: 'Début',
-            width: '18%',
+            width: canEditReservations ? '16%' : '18%',
             render: (booking: any) => (
                 <div className="flex flex-col">
                     <span className="font-semibold text-gray-900">
@@ -156,7 +196,7 @@ export default function BookingsPage() {
         {
             key: 'endDate',
             label: 'Fin',
-            width: '18%',
+            width: canEditReservations ? '16%' : '18%',
             render: (booking: any) => (
                 <div className="flex flex-col">
                     <span className="font-semibold text-gray-900">
@@ -171,7 +211,7 @@ export default function BookingsPage() {
         {
             key: 'description',
             label: 'Description',
-            width: '17%',
+            width: canEditReservations ? '15%' : '17%',
             sortable: false,
             render: (booking: any) => (
                 <span className="text-sm text-gray-600 line-clamp-2">
@@ -212,13 +252,45 @@ export default function BookingsPage() {
         <div className={styles.pageWrapper}>
             <div className={styles.canvas}>
                 <Board
-                    title="Mes Réservations"
+                    title={canEditReservations ? "Toutes les Réservations" : "Mes Réservations"}
                     data={bookings}
                     columns={columns}
                     actions={actions}
                     loading={loading}
                     emptyMessage="Vous n'avez aucune réservation"
                     searchPlaceholder="Rechercher une réservation..."
+                    headerSlot={
+                        canEditReservations ? (
+                            <div className="flex items-center gap-3 py-2">
+                                <div className="inline-flex rounded-lg border border-gray-300 bg-white shadow-sm overflow-hidden">
+                                    <button
+                                        type="button"
+                                        onClick={() => setFilterMode('all')}
+                                        className={`px-5 py-2.5 text-sm font-semibold transition-all duration-200 flex items-center gap-2 ${
+                                            filterMode === 'all'
+                                                ? 'bg-blue-600 text-white shadow-inner'
+                                                : 'bg-white text-gray-700 hover:bg-gray-50'
+                                        }`}
+                                    >
+                                        <i className="fi fi-br-users-alt text-base leading-none"></i>
+                                        <span>Tous</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setFilterMode('mine')}
+                                        className={`px-5 py-2.5 text-sm font-semibold border-l border-gray-300 transition-all duration-200 flex items-center gap-2 ${
+                                            filterMode === 'mine'
+                                                ? 'bg-blue-600 text-white shadow-inner'
+                                                : 'bg-white text-gray-700 hover:bg-gray-50'
+                                        }`}
+                                    >
+                                        <i className="fi fi-br-user text-base leading-none"></i>
+                                        <span>Personnnel</span>
+                                    </button>
+                                </div>
+                            </div>
+                        ) : undefined
+                    }
                 />
 
                 {/* Modal de confirmation d'annulation */}

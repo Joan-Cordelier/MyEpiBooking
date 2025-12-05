@@ -11,6 +11,7 @@ import { formatDuration } from "@/lib/formatDuration";
 import { fr } from "date-fns/locale";
 import { Calendar, dateFnsLocalizer, Views } from "react-big-calendar";
 import { useMemo, useState, useCallback, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import RoomSelector from "@/components/ui/RoomSelector";
 import ReserveButton from "@/components/ui/ReserveButton";
 import { Room, Booking, ReservationType } from "@/lib/data";
@@ -91,6 +92,7 @@ function EventRenderer({ event }: { event: any }) {
 }
 
 export default function BookingCalendarSection() {
+    const router = useRouter();
     const [currentDate, setCurrentDate] = useState(new Date());
     const [view, setView] = useState<typeof Views[keyof typeof Views]>(Views.WEEK);
     const [room, setRoom] = useState<string>();
@@ -250,6 +252,12 @@ export default function BookingCalendarSection() {
         }
     }, [provisionalSlot, selectedRoom, formValues, hasConflict]);
 
+    const handleEventClick = useCallback((event: any) => {
+        if (event.isGhost)
+            return;
+        router.push(`/bookings/${event.id}`);
+    }, [router]);
+
     return (
         <section className="w-full">
             <div className="mb-3 flex items-center justify-between">
@@ -383,6 +391,7 @@ export default function BookingCalendarSection() {
                     onView={(v) => setView(v)}
                     date={currentDate}
                     onNavigate={(d) => setCurrentDate(d)}
+                    onSelectEvent={handleEventClick}
                     views={[Views.WEEK, Views.DAY]}
                     step={30}
                     timeslots={2}

@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { getBookingById, deleteBooking, updateBooking } from '@/api/backend/bookings';
 import { getAllRooms } from '@/api/backend/rooms';
+import { getUserId, hasRight } from '@/lib/handleUser';
 import styles from "../../../page.module.css";
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -19,12 +20,12 @@ import { Anton } from "next/font/google";
 const anton = Anton({ subsets: ["latin"], weight: "400" });
 
 const TYPE_LABELS: Record<string, string> = {
-    MEETING: 'Réunion',
-    WORK: 'Travail',
+    MEETING: 'Meeting',
+    WORK: 'Work',
     KICK_OFF: 'Kick-off',
-    BOOTHING: 'Stand',
-    WORKSHOP: 'Atelier',
-    TALK: 'Conférence',
+    BOOTHING: 'Boothing',
+    WORKSHOP: 'Workshop',
+    TALK: 'Talk',
     UNEXPECTED: 'Autre'
 };
 
@@ -49,6 +50,8 @@ export default function BookingDetailPage() {
     const [error, setError] = useState<string | null>(null);
     const [isEditing, setIsEditing] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [formError, setFormError] = useState<string | null>(null);
+    const [deleteError, setDeleteError] = useState<string | null>(null);
     
     const [formData, setFormData] = useState({
         title: '',
@@ -111,6 +114,7 @@ export default function BookingDetailPage() {
 
     const handleCancelEdit = () => {
         setIsEditing(false);
+        setFormError(null);
         if (booking) {
             const startDate = new Date(booking.startDate);
             const endDate = new Date(booking.endDate);
@@ -130,6 +134,7 @@ export default function BookingDetailPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setFormError(null);
 
         try {
             const startDateTime = new Date(`${formData.startDate}T${formData.startTime}:00`);
@@ -143,14 +148,16 @@ export default function BookingDetailPage() {
                 roomId: formData.roomId,
             };
 
-            if (endDateTime <= startDateTime)
-                return alert('La date de fin doit être après la date de début');
+            if (endDateTime <= startDateTime) {
+                setFormError('La date de fin doit être après la date de début');
+                return;
+            }
             await updateBooking(bookingId, payload)
             await fetchBooking();
             setIsEditing(false);
         } catch (err: any) {
-            console.error('Error updating booking:', err);
-            alert('Erreur lors de la modification de la réservation');
+            const errorMessage = err?.data?.message || err?.message || 'Erreur lors de la modification de la réservation';
+            setFormError(errorMessage);
         }
     };
 
@@ -159,17 +166,20 @@ export default function BookingDetailPage() {
     };
 
     const confirmDelete = async () => {
+        setDeleteError(null);
         try {
             await deleteBooking(bookingId);
             router.push('/bookings');
         } catch (err: any) {
             console.error('Error deleting booking:', err);
-            alert('Erreur lors de l\'annulation de la réservation');
+            const errorMessage = err?.data?.message || err?.message || 'Erreur lors de l\'annulation de la réservation';
+            setDeleteError(errorMessage);
         }
     };
 
     const closeDeleteModal = () => {
         setIsDeleteModalOpen(false);
+        setDeleteError(null);
     };
 
     if (loading) {
@@ -204,6 +214,10 @@ export default function BookingDetailPage() {
 
     const typeLabel = TYPE_LABELS[booking.type] || booking.type;
     const typeColor = TYPE_COLORS[booking.type] || TYPE_COLORS.OTHER;
+    const currentUserId = getUserId();
+    const isOwner = currentUserId && booking.user?.id && currentUserId === booking.user.id;
+    const canEditReservation = hasRight('EDIT_RESERVATION');
+    const canModify = isOwner || canEditReservation;
 
     return (
         <div className={styles.pageWrapper}>
@@ -229,14 +243,16 @@ export default function BookingDetailPage() {
                             <div className="flex flex-wrap gap-3">
                                 <button
                                     onClick={handleEdit}
-                                    className="flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                                    disabled={!canModify}
+                                    className="flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:hover:from-blue-600 disabled:hover:to-blue-700"
                                 >
                                     <i className="fi fi-br-pencil text-base leading-none"></i>
                                     Modifier
                                 </button>
                                 <button
                                     onClick={handleDelete}
-                                    className="flex items-center justify-center gap-2 px-5 py-2.5 bg-white border-2 border-red-600 text-red-600 rounded-lg hover:bg-red-50 hover:border-red-700 transition-all duration-200 font-semibold shadow-sm hover:shadow-md"
+                                    disabled={!canModify}
+                                    className="flex items-center justify-center gap-2 px-5 py-2.5 bg-white border-2 border-red-600 text-red-600 rounded-lg hover:bg-red-50 hover:border-red-700 transition-all duration-200 font-semibold shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-red-600"
                                 >
                                     <i className="fi fi-br-trash text-base leading-none"></i>
                                     Annuler
@@ -331,6 +347,22 @@ export default function BookingDetailPage() {
                         </div>
                     ) : (
                         <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                            {formError && (
+                                <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 flex items-start gap-3">
+                                    <i className="fi fi-br-exclamation text-red-600 text-xl mt-0.5"></i>
+                                    <div className="flex-1">
+                                        <h4 className="font-bold text-red-900 mb-1">Erreur</h4>
+                                        <p className="text-sm text-red-700">{formError}</p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setFormError(null)}
+                                        className="text-red-400 hover:text-red-600 transition-colors"
+                                    >
+                                        <i className="fi fi-br-cross"></i>
+                                    </button>
+                                </div>
+                            )}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label className="block text-xs font-bold text-gray-900 uppercase tracking-wide mb-2">
@@ -355,13 +387,13 @@ export default function BookingDetailPage() {
                                         className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-gray-900 font-medium"
                                         required
                                     >
-                                        <option value="MEETING">Réunion</option>
-                                        <option value="WORK">Travail</option>
+                                        <option value="MEETING">Meeting</option>
+                                        <option value="WORK">Work</option>
                                         <option value="KICK_OFF">Kick-off</option>
-                                        <option value="BOOTHING">Stand</option>
-                                        <option value="WORKSHOP">Atelier</option>
-                                        <option value="TALK">Conférence</option>
-                                        <option value="UNEXPECTED">Imprévu</option>
+                                        <option value="BOOTHING">Boothing</option>
+                                        <option value="WORKSHOP">Workshop</option>
+                                        <option value="TALK">Talk</option>
+                                        <option value="UNEXPECTED">Autre</option>
                                     </select>
                                 </div>
                             
@@ -525,6 +557,23 @@ export default function BookingDetailPage() {
                                     </p>
                                 </div>
                             </div>
+
+                            {deleteError && (
+                                <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 flex items-start gap-3">
+                                    <i className="fi fi-br-exclamation text-red-600 text-xl mt-0.5"></i>
+                                    <div className="flex-1">
+                                        <h4 className="font-bold text-red-900 mb-1">Erreur</h4>
+                                        <p className="text-sm text-red-700">{deleteError}</p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setDeleteError(null)}
+                                        className="text-red-400 hover:text-red-600 transition-colors"
+                                    >
+                                        <i className="fi fi-br-cross"></i>
+                                    </button>
+                                </div>
+                            )}
 
                             <div className="flex flex-col sm:flex-row gap-4">
                                 <button
