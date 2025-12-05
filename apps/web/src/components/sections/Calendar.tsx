@@ -11,13 +11,16 @@ import { formatDuration } from "@/lib/formatDuration";
 import { fr } from "date-fns/locale";
 import { Calendar, dateFnsLocalizer, Views } from "react-big-calendar";
 import { useMemo, useState, useCallback, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import RoomSelector from "@/components/ui/RoomSelector";
 import ReserveButton from "@/components/ui/ReserveButton";
 import { Room, Booking, ReservationType } from "@/lib/data";
 import { handleRoom } from "@/lib/handleRooms";
 import { handleBookings, createBooking } from "@/lib/handleBookings";
 
-const locales = { fr } as const;
+const locales = {
+    fr: fr
+};
 const localizer = dateFnsLocalizer({
     format,
     parse: (dateString: string, _formatString: string, _backupDate: Date) => new Date(dateString),
@@ -89,6 +92,7 @@ function EventRenderer({ event }: { event: any }) {
 }
 
 export default function BookingCalendarSection() {
+    const router = useRouter();
     const [currentDate, setCurrentDate] = useState(new Date());
     const [view, setView] = useState<typeof Views[keyof typeof Views]>(Views.WEEK);
     const [room, setRoom] = useState<string>();
@@ -248,6 +252,12 @@ export default function BookingCalendarSection() {
         }
     }, [provisionalSlot, selectedRoom, formValues, hasConflict]);
 
+    const handleEventClick = useCallback((event: any) => {
+        if (event.isGhost)
+            return;
+        router.push(`/bookings/${event.id}`);
+    }, [router]);
+
     return (
         <section className="w-full">
             <div className="mb-3 flex items-center justify-between">
@@ -373,6 +383,7 @@ export default function BookingCalendarSection() {
                     <div className="rbc-epi rounded-2xl border border-black/20 bg-white p-3 md:p-4">
                 <Calendar
                     localizer={localizer}
+                    // formats={formats}
                     events={events}
                     startAccessor="start"
                     endAccessor="end"
@@ -380,6 +391,7 @@ export default function BookingCalendarSection() {
                     onView={(v) => setView(v)}
                     date={currentDate}
                     onNavigate={(d) => setCurrentDate(d)}
+                    onSelectEvent={handleEventClick}
                     views={[Views.WEEK, Views.DAY]}
                     step={30}
                     timeslots={2}

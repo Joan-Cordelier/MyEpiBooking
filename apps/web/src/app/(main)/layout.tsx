@@ -40,8 +40,6 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   return (
     <RequireAuth>
       <Header
-        username="John Doe"
-        avatarUrl="/images/68x70.svg"
         logoUrl="/images/epitech_logo.png"
       />
       <Navbar />

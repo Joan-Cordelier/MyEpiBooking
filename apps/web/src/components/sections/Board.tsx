@@ -40,6 +40,7 @@ interface BoardProps<T> {
     searchable?: boolean;
     searchPlaceholder?: string;
     idKey?: keyof T;
+    headerSlot?: React.ReactNode;
 }
 
 export default function Board<T extends Record<string, any>>({
@@ -54,6 +55,7 @@ export default function Board<T extends Record<string, any>>({
     searchable = true,
     searchPlaceholder = 'Rechercher...',
     idKey = 'id' as keyof T,
+    headerSlot,
 }: BoardProps<T>) {
     const [searchTerm, setSearchTerm] = useState('');
     const [sortConfig, setSortConfig] = useState<{
@@ -147,6 +149,13 @@ export default function Board<T extends Record<string, any>>({
                     </button>
                 )}
             </div>
+
+            {/* Header Slot */}
+            {headerSlot && (
+                <div className="ml-2">
+                    {headerSlot}
+                </div>
+            )}
 
             {/* Search Bar */}
             {searchable && (

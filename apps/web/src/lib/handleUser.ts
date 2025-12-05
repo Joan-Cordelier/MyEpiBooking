@@ -32,11 +32,15 @@ export function deriveUser(
     initialAvatar?: string
 ): { name?: string; avatar?: string } {
     if (!u)
-        return { name: initialName, avatar: initialAvatar };
-    const name = (u.name || u.firstName || u.email || initialName || '') as string | undefined;
+        return { name: initialName, avatar: initialAvatar };   
     const avatar = (u.photo || initialAvatar || undefined) as string | undefined;
+    let fullName = '';
 
-    return { name, avatar };
+    if (u.firstName && u.name) {
+        fullName = `${u.firstName} ${u.name}`;
+    } else
+        fullName = u.firstName || u.name || u.email || initialName || '';
+    return { name: fullName as string | undefined, avatar };
 }
 
 export function loadInitialUser(
@@ -89,6 +93,19 @@ export function getUserCampusId(): string | null {
         if (!user || !user.campusId)
             return null;
         return user.campusId as string;
+    } catch {
+        return null;
+    }
+}
+
+export function getUserId(): string | null {
+    try {
+        if (typeof window === 'undefined')
+            return null;
+        const user = parseStoredUser();
+        if (!user || !user.id)
+            return null;
+        return user.id as string;
     } catch {
         return null;
     }

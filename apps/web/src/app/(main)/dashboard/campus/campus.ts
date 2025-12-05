@@ -76,7 +76,6 @@ export const handleSubmitCreateRoom = async (
             description: '',
         });
     } catch (err: any) {
-        console.log(`Error creating room:\n${err}`);
         alert('Erreur, veuillez réessayer plus tard...');
     }
 };

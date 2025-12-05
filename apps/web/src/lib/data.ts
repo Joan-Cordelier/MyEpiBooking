@@ -51,6 +51,7 @@ export type ReservationType =
     | 'UNEXPECTED';
 
 export type Booking = {
+    id: string;
     type: ReservationType;
     title: string;
     description: string;
