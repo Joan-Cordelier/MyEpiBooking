@@ -9,8 +9,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { getBookingById, deleteBooking, updateBooking } from '@/api/backend/bookings';
-import { getAllRooms } from '@/api/backend/rooms';
+import { getBookingById, deleteBooking, updateBooking } from '@/api/bookings';
+import { getAllRooms } from '@/api/rooms';
 import { getUserId, hasRight } from '@/lib/handleUser';
 import styles from "../../../page.module.css";
 import { format } from 'date-fns';

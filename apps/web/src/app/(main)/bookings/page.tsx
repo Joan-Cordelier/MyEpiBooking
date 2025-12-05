@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Board, { Column, Action } from '@/components/sections/Board';
 import styles from "../../page.module.css";
-import { getMyBookings, deleteBooking, getAllBookings } from '@/api/backend/bookings';
+import { getMyBookings, deleteBooking, getAllBookings } from '@/api/bookings';
 import { hasRight, getUserId, getUserCampusId } from '@/lib/handleUser';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';

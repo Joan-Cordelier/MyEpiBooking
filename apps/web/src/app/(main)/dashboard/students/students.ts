@@ -6,8 +6,8 @@
 */
 
 import { User } from '@/lib/data';
-import { getAllUsers, deleteUser, updateUser, editUserRights, createUser } from '@/api/backend/user';
-import { getAllCampus } from '@/api/backend/campus';
+import { getAllUsers, deleteUser, updateUser, editUserRights, createUser } from '@/api/user';
+import { getAllCampus } from '@/api/campus';
 import { getUserCampusId } from '@/lib/handleUser';
 
 export const fetchUsers = async (
