@@ -38,11 +38,8 @@ export function getMicrosoftAuthUrl(clientId: string, redirectUri: string, state
 }
 
 export function getRedirectUri(): string {
-    if (typeof window === 'undefined')
-        return process.env.NEXT_PUBLIC_OAUTH_REDIRECT_URI || 'http://localhost:3000/auth/callback';
-    const baseUrl = window.location.origin;
-
-    return `${baseUrl}/auth/callback`;
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
+    return `${backendUrl}/api/auth/microsoft/callback`;
 }
 
 export function generateState(): string {

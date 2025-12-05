@@ -9,6 +9,7 @@ import { prisma } from '../config/database';
 import { AppError } from '../middleware/error.middleware';
 import { UserRight } from '@prisma/client';
 import { generateToken } from '../utils/jwt';
+import { env } from '../config/env';
 
 interface MicrosoftUserInfo {
     sub: string;
@@ -16,6 +17,46 @@ interface MicrosoftUserInfo {
     name?: string;
     given_name?: string;
     family_name?: string;
+}
+
+interface MicrosoftTokenResponse {
+    access_token: string;
+    id_token: string;
+    token_type: string;
+    expires_in: number;
+}
+
+async function exchangeCodeForToken(code: string, redirectUri: string): Promise<MicrosoftTokenResponse> {
+    const clientId = env.MICROSOFT_CLIENT_ID;
+    const clientSecret = env.MICROSOFT_CLIENT_SECRET;
+    const tenantId = env.MICROSOFT_TENANT_ID || 'common';
+
+    if (!clientId || !clientSecret)
+        throw new AppError(500, 'Microsoft OAuth credentials not configured');
+
+    const tokenEndpoint = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`;
+    const tokenParams = new URLSearchParams({
+        client_id: clientId,
+        client_secret: clientSecret,
+        code: code,
+        redirect_uri: redirectUri,
+        grant_type: 'authorization_code',
+    });
+    const tokenResponse = await fetch(tokenEndpoint, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: tokenParams.toString(),
+    });
+
+    if (!tokenResponse.ok) {
+        const errorData = await tokenResponse.json() as { error_description?: string };
+        throw new AppError(401, errorData.error_description || 'Failed to exchange authorization code');
+    }
+
+    const data = await tokenResponse.json() as MicrosoftTokenResponse;
+    return data;
 }
 
 async function fetchMicrosoftUserInfo(accessToken: string) {
@@ -82,11 +123,25 @@ function formatUserResponse(user: any) {
     return { user: userData, token };
 }
 
-export async function authenticateWithMicrosoft(accessToken: string, idToken?: string) {
+export async function authenticateWithMicrosoftToken(accessToken: string, idToken?: string) {
     try {
         const microsoftUser = await fetchMicrosoftUserInfo(accessToken);
         const { email, firstName, name } = extractUserData(microsoftUser);
         const user = await findOrCreateUser(email, firstName, name);
+
+        return formatUserResponse(user);
+    } catch (error) {
+        throw error;
+    }
+}
+
+export async function authenticateWithMicrosoftCode(code: string, redirectUri: string) {
+    try {
+        const tokenData = await exchangeCodeForToken(code, redirectUri);
+        const microsoftUser = await fetchMicrosoftUserInfo(tokenData.access_token);
+        const { email, firstName, name } = extractUserData(microsoftUser);
+        const user = await findOrCreateUser(email, firstName, name);
+
         return formatUserResponse(user);
     } catch (error) {
         throw error;

@@ -38,5 +38,9 @@ router.post(
     '/microsoft',
     authController.microsoftOAuthHandler
 );
+router.get(
+    '/microsoft/callback',
+    authController.microsoftOAuthCallback
+);
 
 export default router;

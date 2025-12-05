@@ -19,40 +19,19 @@ export default function AuthCallbackPage() {
     useEffect(() => {
         const handleCallback = async () => {
             try {
-                const code = searchParams?.get('code');
-                const state = searchParams?.get('state');
+                const token = searchParams?.get('token');
+                const userParam = searchParams?.get('user');
                 const errorParam = searchParams?.get('error');
-                const errorDescription = searchParams?.get('error_description');
-                const storedState = sessionStorage.getItem('oauth_state');
 
                 if (errorParam)
-                    throw new Error(errorDescription || errorParam);
-                if (!code)
-                    throw new Error('No authorization code received');
-                if (state !== storedState)
-                    throw new Error('Invalid state parameter - possible CSRF attack');
+                    throw new Error(decodeURIComponent(errorParam));
+                if (!token || !userParam)
+                    throw new Error('Authentication data not received');
 
-                const response = await fetch('/api/auth/microsoft/callback', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ code }),
-                });
+                localStorage.setItem('token', token);
+                const user = JSON.parse(decodeURIComponent(userParam));
+                localStorage.setItem('user', JSON.stringify(user));
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || 'Authentication failed');
-                }
-
-                const data = await response.json();
-
-                if (data.token) {
-                    localStorage.setItem('token', data.token);
-                    if (data.user) {
-                        localStorage.setItem('user', JSON.stringify(data.user));
-                    }
-                }
                 sessionStorage.removeItem('oauth_state');
                 sessionStorage.removeItem('oauth_from');
                 router.push('/');
