@@ -47,6 +47,26 @@ const envSchema = zod.object({
     LOG_LEVEL: zod
         .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace'])
         .optional(),
+
+    // Microsoft OAuth2 Configuration
+    MICROSOFT_CLIENT_ID: zod
+        .string()
+        .min(1, 'MICROSOFT_CLIENT_ID is required for OAuth authentication')
+        .optional(),
+
+    MICROSOFT_CLIENT_SECRET: zod
+        .string()
+        .min(1, 'MICROSOFT_CLIENT_SECRET is required for OAuth authentication')
+        .optional(),
+
+    MICROSOFT_TENANT_ID: zod
+        .string()
+        .optional(),
+
+    FRONTEND_URL: zod
+        .string()
+        .url({ message: 'FRONTEND_URL must be a valid URL' })
+        .default('http://localhost:3000'),
 });
 
 const parseEnv = () => {

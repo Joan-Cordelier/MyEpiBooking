@@ -10,8 +10,8 @@
 import { Anton } from "next/font/google";
 import { useRouter, useSearchParams } from "next/navigation";
 import AdminLogin from "@/components/ui/AdminLogin";
-
-import * as Auth from "@/api/backend/auth" 
+import * as Auth from "@/api/auth" 
+import { initiateOAuthLogin } from "@/lib/oauth";
 
 const anton = Anton({ subsets: ["latin"], weight: "400" });
 
@@ -49,6 +49,10 @@ export default function Login({
         }
     }
 
+    function handleMicrosoftLogin() {
+        initiateOAuthLogin();
+    }
+
     return (
         <section className="w-full min-h-[80vh] bg-white overflow-hidden flex items-center justify-center">
             <div className="w-[891px] h-[587px] rounded-xl border border-black/50 bg-transparent flex">
@@ -69,14 +73,12 @@ export default function Login({
 
                     <button
                         type="button"
-                        onClick={() => {
-                            window.location.href = '/';
-                        }}
+                        onClick={handleMicrosoftLogin}
                         className={`mt-8 w-[556px] h-7 bg-blue-700 text-white flex items-center justify-center hover:brightness-95 transition-all ${anton.className}`}
-                        aria-label="Se connecter avec un compte Epitech"
+                        aria-label="Se connecter avec un compte Microsoft"
                     >
                         <span className="text-xl">&gt;&gt;</span>
-                        <span className="text-lg">&nbsp; SE CONNECTER AVEC UN COMPTE EPITECH &nbsp;</span>
+                        <span className="text-lg">&nbsp; SE CONNECTER AVEC MICROSOFT &nbsp;</span>
                         <span className="text-xl">&lt;&lt;</span>
                     </button>
 

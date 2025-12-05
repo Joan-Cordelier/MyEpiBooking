@@ -5,7 +5,7 @@
 ** Bookings API functions
 */
 
-import * as Bookings from "@/api/backend/bookings";
+import * as Bookings from "@/api/bookings";
 import { Room, Booking, ReservationType } from "./data";
 import { getUserCampusId } from "./handleUser";
 

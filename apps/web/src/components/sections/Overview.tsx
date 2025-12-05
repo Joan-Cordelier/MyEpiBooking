@@ -15,9 +15,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getAllUsers } from '@/api/backend/user';
-import { getAllBookings } from '@/api/backend/bookings';
-import { getAllRooms } from '@/api/backend/rooms';
+import { getAllUsers } from '@/api/user';
+import { getAllBookings } from '@/api/bookings';
+import { getAllRooms } from '@/api/rooms';
 import { getUserCampusId } from '@/lib/handleUser';
 import { Anton } from "next/font/google";
 

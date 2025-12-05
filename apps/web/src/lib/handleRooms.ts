@@ -6,7 +6,7 @@
 */
 
 import { Room } from "./data";
-import * as Rooms from "@/api/backend/rooms";
+import * as Rooms from "@/api/rooms";
 import { getUserCampusId } from "./handleUser";
 
 export async function handleRoom(): Promise<Room[]> {

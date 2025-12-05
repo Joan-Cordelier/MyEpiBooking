@@ -10,7 +10,7 @@
 import { Room } from "@/lib/data";
 import { useEffect, useState } from 'react';
 import Board, { Column, Action } from '@/components/sections/Board';
-import { deleteRoom, setRoomState } from '@/api/backend/rooms';
+import { deleteRoom, setRoomState } from '@/api/rooms';
 import { getUserRights } from '@/lib/handleUser';
 import { useRouter } from 'next/navigation';
 import styles from "../../../page.module.css";

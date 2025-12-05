@@ -6,8 +6,8 @@
 */
 
 import { Room } from '@/lib/data';
-import { getAllRooms, createRoom } from '@/api/backend/rooms';
-import { getAllCampus } from '@/api/backend/campus';
+import { getAllRooms, createRoom } from '@/api/rooms';
+import { getAllCampus } from '@/api/campus';
 import { getUserCampusId } from '@/lib/handleUser';
 
 export const fetchRooms = async (
