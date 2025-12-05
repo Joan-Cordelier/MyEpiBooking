@@ -273,6 +273,44 @@ export default function BookingDetailPage() {
                                 </span>
                             </div>
 
+                            {/* Auteur de la réservation */}
+                            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Réservé par</label>
+                                <div className="flex items-center gap-4">
+                                    {booking.user?.photo ? (
+                                        <img
+                                            src={booking.user.photo}
+                                            alt={booking.user.name || 'Utilisateur'}
+                                            className="w-14 h-14 rounded-full object-cover border-2 border-blue-300"
+                                        />
+                                    ) : (
+                                        <div className="w-14 h-14 rounded-full bg-blue-600 flex items-center justify-center border-2 border-blue-300">
+                                            <span className="text-white font-bold text-xl">
+                                                {booking.user?.name ? booking.user.name[0].toUpperCase() : booking.user?.firstName ? booking.user.firstName[0].toUpperCase() : '?'}
+                                            </span>
+                                        </div>
+                                    )}
+                                    <div className="flex-1">
+                                        <div className="font-bold text-gray-900 text-lg">
+                                            {booking.user?.firstName && booking.user?.name 
+                                                ? `${booking.user.firstName} ${booking.user.name}`
+                                                : booking.user?.firstName || booking.user?.name || 'Utilisateur inconnu'}
+                                        </div>
+                                        {booking.user?.email && (
+                                            <div className="text-sm text-gray-600 flex items-center gap-1 mt-1">
+                                                <i className="fi fi-br-envelope text-xs"></i>
+                                                {booking.user.email}
+                                            </div>
+                                        )}
+                                        {booking.user?.actual_promotion && (
+                                            <div className="text-xs text-blue-700 font-semibold mt-1 bg-blue-100 inline-block px-2 py-0.5 rounded">
+                                                {booking.user.actual_promotion}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
                             {/* Informations de la salle */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-1">
@@ -342,6 +380,22 @@ export default function BookingDetailPage() {
                                     <p className="text-gray-900 whitespace-pre-wrap leading-relaxed">
                                         {booking.description || 'Aucune description fournie'}
                                     </p>
+                                </div>
+                            </div>
+
+                            {/* Informations supplémentaires */}
+                            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                    <div className="flex items-center gap-2 text-gray-600">
+                                        <i className="fi fi-br-calendar-plus text-blue-600"></i>
+                                        <span>Créée le {format(new Date(booking.createdAt), 'dd MMMM yyyy à HH:mm', { locale: fr })}</span>
+                                    </div>
+                                    {booking.updatedAt && booking.updatedAt !== booking.createdAt && (
+                                        <div className="flex items-center gap-2 text-gray-600">
+                                            <i className="fi fi-br-edit text-blue-600"></i>
+                                            <span>Modifiée le {format(new Date(booking.updatedAt), 'dd MMMM yyyy à HH:mm', { locale: fr })}</span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
