@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import * as authService from '../services/auth.service';
+import * as microsoftAuthService from '../services/microsoft.service'
 import { asyncHandler, AppError } from '../middleware/error.middleware';
 
 export const register = asyncHandler(async (req: Request, res: Response) => {
@@ -30,4 +31,13 @@ export const me = asyncHandler(async (req: Request, res: Response) => {
 
     const user = await authService.getMe(req.user.id);
     res.status(200).json(user);
+});
+
+export const microsoftOAuthHandler = asyncHandler(async (req: Request, res: Response) => {
+    const { access_token, id_token } = req.body;
+    if (!access_token)
+        throw new AppError(400, 'Access token is required');
+    const result = await microsoftAuthService.authenticateWithMicrosoft(access_token, id_token);
+
+    res.status(200).json(result);
 });

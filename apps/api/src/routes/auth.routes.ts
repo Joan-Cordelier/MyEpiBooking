@@ -34,5 +34,9 @@ router.get(
     authenticate,
     authController.me
 );
+router.post(
+    '/microsoft',
+    authController.microsoftOAuthHandler
+);
 
 export default router;
