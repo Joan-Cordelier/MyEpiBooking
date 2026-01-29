@@ -39,7 +39,7 @@ class BurgerMenu extends StatelessWidget {
           const SizedBox(height: 16),
           _MenuItem(
             label: 'Nouvelle Reservation',
-            onTap: () => onNavigate('/newReservation'),
+            onTap: () => onNavigate('/newBooking'),
           ),
           const SizedBox(height: 16),
           _MenuItem(
@@ -50,11 +50,6 @@ class BurgerMenu extends StatelessWidget {
           _MenuItem(
             label: 'Salles',
             onTap: () => onNavigate('/rooms'),
-          ),
-          const SizedBox(height: 16),
-          _MenuItem(
-            label: 'Calendrier',
-            onTap: () => onNavigate('/calendar'),
           ),
         ],
       ),

@@ -16,7 +16,7 @@ const createReservationSchema = z.object({
     description: z.string().trim().optional(),
     startDate: z.string().datetime(),
     endDate: z.string().datetime(),
-    roomId: z.string().cuid(),
+    roomId: z.string().min(1, 'Room ID is required'),
 }).refine((data) => new Date(data.startDate) < new Date(data.endDate), {
     message: "Start date must be before end date",
     path: ["endDate"],
@@ -28,7 +28,7 @@ const updateReservationSchema = z.object({
     description: z.string().trim().optional(),
     startDate: z.string().datetime().optional(),
     endDate: z.string().datetime().optional(),
-    roomId: z.string().cuid().optional(),
+    roomId: z.string().min(1).optional(),
 }).refine((data) => {
     if (data.startDate && data.endDate) {
         return new Date(data.startDate) < new Date(data.endDate);
@@ -40,11 +40,11 @@ const updateReservationSchema = z.object({
 });
 
 const idParamSchema = z.object({
-    id: z.string().cuid(),
+    id: z.string().min(1, 'ID is required'),
 });
 
 const roomIdParamSchema = z.object({
-    roomId: z.string().cuid(),
+    roomId: z.string().min(1, 'Room ID is required'),
 });
 
 const dateRangeQuerySchema = z.object({
@@ -55,8 +55,8 @@ const dateRangeQuerySchema = z.object({
 const paginationQuerySchema = z.object({
     startDate: z.string().datetime().optional(),
     endDate: z.string().datetime().optional(),
-    userId: z.string().cuid().optional(),
-    roomId: z.string().cuid().optional(),
+    userId: z.string().min(1).optional(),
+    roomId: z.string().min(1).optional(),
     type: z.enum(['MEETING', 'WORK', 'KICK_OFF', 'BOOTSTRAP', 'WORKSHOP', 'TALK', 'UNEXPECTED']).optional(),
 });
 

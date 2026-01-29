@@ -22,7 +22,7 @@ class _LoginPageState extends State<LoginPage> {
         _passwordController.text,
       );
       if (mounted) {
-        Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+        Navigator.of(context).pushReplacementNamed('/home');
       }
     } catch (e) {
       if (mounted) {

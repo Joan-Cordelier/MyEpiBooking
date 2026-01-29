@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../Service/api_service.dart';
-import '../Service/auth_service.dart';
+import 'package:provider/provider.dart';
+import '../Provider/reservation_provider.dart';
+import '../Model/room.dart';
 
 class NewBookingPage extends StatefulWidget {
   const NewBookingPage({super.key});
@@ -10,209 +11,274 @@ class NewBookingPage extends StatefulWidget {
 }
 
 class _NewBookingPageState extends State<NewBookingPage> {
-  final _formKey = GlobalKey<FormState>();
-  List<dynamic> rooms = [];
-  bool isLoadingRooms = true;
-
-  String? selectedRoomId;
-  DateTime? selectedDate;
-  TimeOfDay? startTime;
-  TimeOfDay? endTime;
-  String? selectedType;
-  final titleController = TextEditingController();
-  final descriptionController = TextEditingController();
-
-  final types = ['MEETING', 'WORK', 'KICK_OFF', 'BOOTSTRAP', 'WORKSHOP', 'TALK', 'UNEXPECTED'];
+  Room? _selectedRoom;
+  DateTime? _selectedDate;
+  TimeOfDay? _startTime;
+  TimeOfDay? _endTime;
+  final TextEditingController _reasonController = TextEditingController();
+  final TextEditingController _titleController = TextEditingController();
+  String _selectedType = 'MEETING';
+  final List<String> _types = const ['MEETING', 'WORK', 'KICK_OFF', 'BOOTSTRAP', 'WORKSHOP', 'TALK', 'UNEXPECTED'];
 
   @override
   void initState() {
     super.initState();
-    _fetchRooms();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ReservationProvider>().fetchRooms();
+    });
   }
 
-  Future<void> _fetchRooms() async {
-    try {
-      final data = await ApiService.fetchRooms();
-      setState(() {
-        rooms = data;
-        isLoadingRooms = false;
-      });
-    } catch (e) {
-      setState(() => isLoadingRooms = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur lors du chargement des salles: $e')),
-        );
-      }
-    }
+  @override
+  void dispose() {
+    _reasonController.dispose();
+    _titleController.dispose();
+    super.dispose();
   }
 
-  Future<void> _selectDate() async {
+  Future<void> _selectDate(BuildContext context) async {
     final picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDate: _selectedDate ?? DateTime.now(),
       firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
+      lastDate: DateTime.now().add(const Duration(days: 30)),
     );
     if (picked != null) {
-      setState(() => selectedDate = picked);
+      setState(() => _selectedDate = picked);
     }
   }
 
-  Future<void> _selectTime(bool isStart) async {
+  Future<void> _selectStartTime(BuildContext context) async {
     final picked = await showTimePicker(
       context: context,
-      initialTime: TimeOfDay.now(),
+      initialTime: _startTime ?? TimeOfDay.now(),
     );
     if (picked != null) {
-      setState(() {
-        if (isStart) {
-          startTime = picked;
-        } else {
-          endTime = picked;
-        }
-      });
+      setState(() => _startTime = picked);
     }
   }
 
-  Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
+  Future<void> _selectEndTime(BuildContext context) async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _endTime ?? const TimeOfDay(hour: 12, minute: 0),
+    );
+    if (picked != null) {
+      setState(() => _endTime = picked);
+    }
+  }
 
-    if (selectedRoomId == null || selectedDate == null || startTime == null || endTime == null || selectedType == null) {
+  void _submitReservation() async {
+    if (_selectedRoom == null || _selectedDate == null || _startTime == null || _endTime == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Veuillez remplir tous les champs')),
       );
       return;
     }
 
+    if (_titleController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Le titre est requis')),
+      );
+      return;
+    }
+
     final startDateTime = DateTime(
-      selectedDate!.year,
-      selectedDate!.month,
-      selectedDate!.day,
-      startTime!.hour,
-      startTime!.minute,
+      _selectedDate!.year,
+      _selectedDate!.month,
+      _selectedDate!.day,
+      _startTime!.hour,
+      _startTime!.minute,
     );
 
     final endDateTime = DateTime(
-      selectedDate!.year,
-      selectedDate!.month,
-      selectedDate!.day,
-      endTime!.hour,
-      endTime!.minute,
+      _selectedDate!.year,
+      _selectedDate!.month,
+      _selectedDate!.day,
+      _endTime!.hour,
+      _endTime!.minute,
     );
 
-    final reservationData = {
-      'roomId': selectedRoomId,
-      'type': selectedType,
-      'title': titleController.text,
-      'description': descriptionController.text,
-      'startDate': startDateTime.toIso8601String(),
-      'endDate': endDateTime.toIso8601String(),
-    };
+    if (endDateTime.isBefore(startDateTime) || endDateTime.isAtSameMomentAs(startDateTime)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('L\'heure de fin doit être après l\'heure de début')),
+      );
+      return;
+    }
 
-    try {
-      final token = await AuthService.getToken();
-      if (token != null) {
-        await ApiService.createReservation(token, reservationData);
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Réservation créée avec succès')),
-          );
-          Navigator.of(context).pop();
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur: $e')),
-        );
-      }
+    final roomId = _selectedRoom!.apiId;
+
+    final success = await context.read<ReservationProvider>().createReservation(
+      roomId,
+      startDateTime,
+      endDateTime,
+      _reasonController.text.isEmpty ? null : _reasonController.text,
+      _titleController.text.trim(),
+      _selectedType,
+    );
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Réservation créée avec succès !')),
+      );
+      Navigator.of(context).pop();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.read<ReservationProvider>().error ?? 'Erreur lors de la réservation')),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Nouvelle Réservation')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              if (isLoadingRooms)
-                const Center(child: CircularProgressIndicator())
-              else
-                DropdownButtonFormField<String>(
-                  decoration: const InputDecoration(labelText: 'Salle'),
-                  value: selectedRoomId,
-                  items: rooms.map((room) {
+      appBar: AppBar(
+        title: const Text('Nouvelle Réservation'),
+        backgroundColor: const Color(0xFF3B26FF),
+      ),
+      body: Consumer<ReservationProvider>(
+        builder: (context, provider, _) {
+          if (provider.isLoading && provider.rooms.isEmpty) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Sélection de la salle
+                const Text('Salle', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                DropdownButton<Room>(
+                  isExpanded: true,
+                  value: _selectedRoom,
+                  hint: const Text('Sélectionnez une salle'),
+                  items: provider.rooms.map((room) {
                     return DropdownMenuItem(
-                      value: room['id'] as String,
-                      child: Text(room['name'] as String),
+                      value: room,
+                      child: Text('${room.name} (Capacité: ${room.capacity})'),
                     );
                   }).toList(),
-                  onChanged: (value) => setState(() => selectedRoomId = value),
-                  validator: (value) => value == null ? 'Sélectionnez une salle' : null,
+                  onChanged: (room) => setState(() => _selectedRoom = room),
                 ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _selectDate,
-                child: Text(selectedDate == null
-                    ? 'Sélectionner une date'
-                    : 'Date: ${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}'),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => _selectTime(true),
-                      child: Text(startTime == null ? 'Heure début' : startTime!.format(context)),
+                const SizedBox(height: 24),
+
+                // Sélection de la date
+                const Text('Date', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                GestureDetector(
+                  onTap: () => _selectDate(context),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      _selectedDate != null
+                          ? '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}'
+                          : 'Sélectionnez une date',
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => _selectTime(false),
-                      child: Text(endTime == null ? 'Heure fin' : endTime!.format(context)),
+                ),
+                const SizedBox(height: 24),
+
+                // Heure de début
+                const Text('Heure de début', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                GestureDetector(
+                  onTap: () => _selectStartTime(context),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      _startTime != null ? _startTime!.format(context) : 'Sélectionnez l\'heure de début',
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                decoration: const InputDecoration(labelText: 'Type'),
-                value: selectedType,
-                items: types.map((type) {
-                  return DropdownMenuItem(
-                    value: type,
-                    child: Text(type),
-                  );
-                }).toList(),
-                onChanged: (value) => setState(() => selectedType = value),
-                validator: (value) => value == null ? 'Sélectionnez un type' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: titleController,
-                decoration: const InputDecoration(labelText: 'Titre'),
-                validator: (value) => value!.isEmpty ? 'Entrez un titre' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: descriptionController,
-                decoration: const InputDecoration(labelText: 'Description'),
-                maxLines: 3,
-              ),
-              const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: _submit,
-                child: const Text('Créer la réservation'),
-              ),
-            ],
-          ),
-        ),
+                ),
+                const SizedBox(height: 24),
+
+                // Heure de fin
+                const Text('Heure de fin', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                GestureDetector(
+                  onTap: () => _selectEndTime(context),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      _endTime != null ? _endTime!.format(context) : 'Sélectionnez l\'heure de fin',
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Raison (optionnel)
+                const Text('Raison (optionnel)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _reasonController,
+                  decoration: InputDecoration(
+                    hintText: 'Entrez la raison de la réservation',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 24),
+
+                // Titre
+                const Text('Titre', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _titleController,
+                  decoration: InputDecoration(
+                    hintText: 'Entrez un titre',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Type
+                const Text('Type', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                DropdownButton<String>(
+                  isExpanded: true,
+                  value: _selectedType,
+                  items: _types
+                      .map((t) => DropdownMenuItem(value: t, child: Text(t)))
+                      .toList(),
+                  onChanged: (v) => setState(() => _selectedType = v ?? _selectedType),
+                ),
+                const SizedBox(height: 24),
+
+                // Bouton de réservation
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: provider.isLoading ? null : _submitReservation,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF3B26FF),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: provider.isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation(Colors.white)),
+                          )
+                        : const Text('Réserver', style: TextStyle(color: Colors.white, fontSize: 16)),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
